@@ -1,0 +1,277 @@
+@import "tailwindcss";
+
+@theme {
+  --color-gold: #FFD700;          /* bright gold — small accents, CTAs only */
+  --color-gold-bright: #FFC700;
+  --color-gold-deep: #E0A810;     /* premium deep gold — large fills/gradients */
+  --color-gold-amber: #CA8A04;    /* luxury amber (UI/UX Pro Max premium recipe) */
+  --color-gold-dim: #B8960C;
+  --color-bg: #0a0a0a;
+  --color-bg-2: #111111;
+  --color-bg-3: #1a1a1a;
+  --color-bg-4: #222222;
+  --color-border: #2a2a2a;
+  --color-border-gold: rgba(255,215,0,0.2);
+  --color-text: #f5f5f5;
+  --color-muted: #888888;
+  --color-muted-2: #555555;
+  --color-purple: #667eea;
+  --color-success: #10b981;
+  --font-sans: var(--font-sans-loaded), 'Inter', system-ui, -apple-system, sans-serif;
+  --font-display: var(--font-display-loaded), 'Space Grotesk', 'Inter', system-ui, sans-serif;
+
+  /* shadcn-style semantic tokens mapped to the Prov palette — lets dropped-in
+     shadcn/21st components (PreviewSwitchHero) render on-brand unchanged. */
+  --color-background: #0a0a0a;
+  --color-foreground: #f5f5f5;
+  --color-muted: #18160f;
+  --color-muted-foreground: #8a8a8a;
+  --color-border: #262626;
+  --color-ring: #FFD700;
+  --color-primary: #FFD700;
+  --color-primary-foreground: #0a0a0a;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+/* Emil Kowalski easing curves — built-in CSS easings are too weak */
+:root {
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  background-color: #0a0a0a;
+  color: #f5f5f5;
+  font-family: var(--font-sans);
+  overflow-x: hidden;
+}
+
+/* Premium display typography for all headings (UI/UX Pro Max: distinct
+   heading face is the key lift from "generic AI" to premium SaaS). */
+h1, h2, h3, h4, .font-display {
+  font-family: var(--font-display);
+  letter-spacing: -0.02em;
+}
+
+/* Gold gradient text — deeper amber→bright blend reads premium, not neon */
+.gold-text {
+  background: linear-gradient(135deg, #FFC700 0%, #FFD700 45%, #FFE55C 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Primary gold button */
+.btn-gold {
+  background: linear-gradient(135deg, #FFD700 0%, #FFC700 100%);
+  color: #0a0a0a;
+  font-weight: 700;
+  padding: 0.875rem 2rem;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-size: 1rem;
+  line-height: 1.5;
+  text-decoration: none;
+  transition: transform 160ms var(--ease-out), box-shadow 200ms var(--ease-out);
+  box-shadow: 0 0 20px rgba(255,215,0,0.25), 0 4px 15px rgba(0,0,0,0.3);
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-gold::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.2) 0%, transparent 60%);
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.btn-gold:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 0 35px rgba(255,215,0,0.4), 0 8px 25px rgba(0,0,0,0.4);
+}
+
+.btn-gold:hover::after { opacity: 1; }
+/* Emil: pressable elements scale down on :active for instant tactile feedback */
+.btn-gold:active { transform: scale(0.97); }
+
+/* Outlined gold button */
+.btn-outline-gold {
+  background: transparent;
+  color: #FFD700;
+  font-weight: 600;
+  padding: 0.875rem 2rem;
+  border-radius: 8px;
+  border: 1px solid rgba(255,215,0,0.4);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-size: 1rem;
+  line-height: 1.5;
+  text-decoration: none;
+  transition: transform 160ms var(--ease-out), border-color 200ms ease, background 200ms ease;
+}
+
+.btn-outline-gold:hover {
+  border-color: #FFD700;
+  background: rgba(255,215,0,0.06);
+  transform: translateY(-2px);
+}
+.btn-outline-gold:active { transform: scale(0.97); }
+
+/* Card styles */
+.card-dark {
+  background: #111111;
+  border: 1px solid #2a2a2a;
+  border-radius: 12px;
+}
+
+.card-gold-border {
+  background: #111111;
+  border: 1px solid rgba(255,215,0,0.2);
+  border-radius: 12px;
+}
+
+/* Input */
+.input-dark {
+  background: #1a1a1a;
+  border: 1px solid #333333;
+  border-radius: 8px;
+  color: #f5f5f5;
+  padding: 0.875rem 1rem;
+  font-size: 1rem;
+  width: 100%;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.input-dark:focus {
+  border-color: #FFD700;
+  box-shadow: 0 0 0 3px rgba(255,215,0,0.1);
+}
+.input-dark::placeholder { color: #555; }
+
+/* Gold glow divider — deeper amber reads premium, not neon */
+.divider-gold {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(202,138,4,0.45), transparent);
+}
+
+/* Section padding */
+.section { padding: 100px 0; }
+.section-sm { padding: 60px 0; }
+
+/* Container */
+.container { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+
+/* Badge */
+.badge-gold {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  background: rgba(255,215,0,0.08);
+  color: #FFD700;
+  border: 1px solid rgba(255,215,0,0.2);
+}
+
+/* Stat card — deeper amber border/wash for a calmer premium fill */
+.stat-card {
+  background: linear-gradient(135deg, #111111, #16130b);
+  border: 1px solid rgba(202,138,4,0.18);
+  border-radius: 16px;
+  padding: 32px;
+  text-align: center;
+  transition: border-color 0.2s, transform 0.2s;
+}
+.stat-card:hover {
+  border-color: rgba(255,215,0,0.35);
+  transform: translateY(-4px);
+}
+
+/* Range slider thumb (used in the ROI calculator) */
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #FFD700;
+  border: 3px solid #0a0a0a;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,215,0,0.4);
+  cursor: pointer;
+  transition: transform 160ms var(--ease-out);
+}
+input[type="range"]::-webkit-slider-thumb:active { transform: scale(1.15); }
+input[type="range"]::-moz-range-thumb {
+  width: 20px; height: 20px; border-radius: 50%;
+  background: #FFD700; border: 3px solid #0a0a0a; cursor: pointer;
+}
+
+/* Premium depth utilities */
+.grid-bg {
+  background-image:
+    linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+  background-size: 56px 56px;
+  mask-image: radial-gradient(ellipse 80% 60% at 50% 40%, #000 30%, transparent 75%);
+  -webkit-mask-image: radial-gradient(ellipse 80% 60% at 50% 40%, #000 30%, transparent 75%);
+}
+.glass {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.08);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+.glass-gold {
+  background: linear-gradient(135deg, rgba(202,138,4,0.08), rgba(255,215,0,0.02));
+  border: 1px solid rgba(202,138,4,0.25);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+@keyframes floaty { 0%,100% { transform: translateY(0) } 50% { transform: translateY(-6px) } }
+@keyframes pulseDot { 0%,100% { opacity: 1 } 50% { opacity: 0.35 } }
+
+/* Noise texture overlay for hero */
+.noise {
+  position: relative;
+}
+.noise::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: #0a0a0a; }
+::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #555; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
