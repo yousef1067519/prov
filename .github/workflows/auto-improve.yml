@@ -1,0 +1,44 @@
+﻿name: Prov Auto-Improvement
+
+on:
+  schedule:
+    - cron: '0 9 * * *'
+    - cron: '0 18 * * *'
+  workflow_dispatch:
+
+jobs:
+  dashboard-agent:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+      - run: npm install
+      - run: npx claude "DASHBOARD AGENT: Improve the dashboard. Optimize performance, fix bugs, add features. Work 1 hour. Test. Commit changes."
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+
+  email-agent:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+      - run: npm install
+      - run: npx claude "EMAIL AGENT: Improve email system. Optimize templates, improve deliverability. Work 1 hour. Test. Commit changes."
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+
+  search-agent:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+      - run: npm install
+      - run: npx claude "SEARCH AGENT: Improve creator search. Optimize speed, improve filters. Work 1 hour. Test. Commit changes."
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
