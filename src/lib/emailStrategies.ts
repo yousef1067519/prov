@@ -138,3 +138,36 @@ export const TEMPLATE_VARIABLES = [
   '[Niche]', '[Followers]', '[Engagement]', '[AvgViews]',
   '[SponsorName]', '[CreatorName]', '[CreatorRate]',
 ]
+
+/**
+ * Default follow-up sequence for campaign-wizard sends. Short nudges that get
+ * queued automatically and cancelled if the recipient replies.
+ */
+export const DEFAULT_FOLLOW_UPS: { subject: string; body: string; days: number }[] = [
+  {
+    days: 3,
+    subject: 'Re: quick follow-up, [FirstName]',
+    body: `Hi [FirstName],\n\nJust floating this back to the top of your inbox - I know things get busy. Still think there could be a great fit here.\n\nWorth a quick reply either way?`,
+  },
+  {
+    days: 7,
+    subject: 'Last note, [FirstName]',
+    body: `Hi [FirstName],\n\nI'll stop here so I'm not crowding your inbox. If a paid collaboration is something you'd consider now or later, just reply "interested" and I'll take it from there.`,
+  },
+]
+
+/**
+ * How to address a creator in an email greeting. "Marques Lee" → "Marques"
+ * (human first name), but channel/brand names like "Tech Shan Tamil" or
+ * "GadgetGina HQ" keep the full name — naive splitting produces garbage
+ * greetings ("Hi Tech,").
+ */
+export function greetingName(name: string): string {
+  const clean = (name ?? '').trim()
+  if (!clean) return 'there'
+  const words = clean.split(/\s+/)
+  const brandy = /^(tech|official|tv|hq|media|labs?|studio|daily|gaming|games|channel|the|team|its|itz|mr|dr|real|im)$/i
+  // Exactly two words where the first looks like a capitalized human name → use it.
+  if (words.length === 2 && /^[A-Z][a-z]+$/.test(words[0]) && !brandy.test(words[0])) return words[0]
+  return clean
+}

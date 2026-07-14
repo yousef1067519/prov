@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { stripe } from '@/lib/stripe'
+import { stripe, planForPrice } from '@/lib/stripe'
 import { createClient } from '@supabase/supabase-js'
 import Stripe from 'stripe'
 
@@ -12,7 +12,7 @@ function adminClient() {
   )
 }
 
-async function setAccess(userId: string | null, email: string | null, accessType: 'lifetime' | 'none') {
+async function setAccess(userId: string | null, email: string | null, accessType: 'standard' | 'vip' | 'lifetime' | 'none') {
   const supabase = adminClient()
   if (userId) {
     await supabase.from('profiles').upsert({ id: userId, access_type: accessType })
@@ -44,7 +44,9 @@ export async function POST(req: NextRequest) {
     case 'checkout.session.completed': {
       const session = event.data.object as Stripe.Checkout.Session
       if (session.mode !== 'subscription') break
-      await setAccess(session.metadata?.user_id ?? null, session.customer_email, 'lifetime')
+      // Tier comes from checkout metadata; legacy sessions without it → vip.
+      const plan = session.metadata?.plan === 'standard' ? 'standard' : 'vip'
+      await setAccess(session.metadata?.user_id ?? null, session.customer_email, plan)
       break
     }
 
@@ -67,13 +69,17 @@ export async function POST(req: NextRequest) {
     case 'customer.subscription.updated': {
       const sub = event.data.object as Stripe.Subscription
       const isActive = sub.status === 'active' || sub.status === 'trialing'
+      // Resolve the tier from the subscription's price (handles upgrades and
+      // downgrades between Standard and VIP made in the customer portal).
+      const priceId = sub.items?.data?.[0]?.price?.id
+      const plan = planForPrice(priceId)
       const customerId = sub.customer as string
       const customer = await stripe.customers.retrieve(customerId) as Stripe.Customer
       if (customer.email) {
         const { data: { users } } = await supabase.auth.admin.listUsers()
         const found = users.find(u => u.email === customer.email)
         if (found) {
-          await supabase.from('profiles').upsert({ id: found.id, access_type: isActive ? 'lifetime' : 'none' })
+          await supabase.from('profiles').upsert({ id: found.id, access_type: isActive ? plan : 'none' })
         }
       }
       break

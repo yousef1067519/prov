@@ -1,5 +1,5 @@
 export type UserRole = 'agency' | 'influencer' | 'admin'
-export type AccessType = 'trial' | 'lifetime' | 'none'
+export type AccessType = 'trial' | 'standard' | 'vip' | 'lifetime' | 'none'
 
 export interface Profile {
   id: string
@@ -25,7 +25,14 @@ export interface Influencer {
   engagement_rate: number
   email: string | null
   country: string
+  language?: string
   created_at: string
+  last_contacted_at?: string | null
+  contacted_by?: string | null
+  // Curated discovery fields (0020). Optional: absent until the migration is applied.
+  quality_score?: number | null
+  vetting_status?: 'unvetted' | 'pending' | 'vetted' | 'rejected' | null
+  brand_safety_flags?: string[] | null
 }
 
 export interface TrialSignup {

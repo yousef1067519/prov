@@ -23,13 +23,10 @@ export default async function CampaignPage() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const { data: profile } = await supabase.from('profiles').select('access_type, trial_end').eq('id', user.id).single()
+  // ENTERPRISE (§8.1): admin-provisioned access only — no trial gating.
+  const { data: profile } = await supabase.from('profiles').select('access_type').eq('id', user.id).single()
   const accessType = profile?.access_type ?? 'none'
-  const trialEnd = profile?.trial_end ? new Date(profile.trial_end) : null
-  const now = new Date()
-  const hasAccess = accessType === 'lifetime' || (accessType === 'trial' && trialEnd && trialEnd > now)
-  if (!hasAccess) redirect('/trial')
-  const daysLeft = accessType === 'trial' && trialEnd ? Math.max(0, Math.ceil((trialEnd.getTime() - now.getTime()) / 86400000)) : null
+  if (!['lifetime', 'standard', 'vip'].includes(accessType)) redirect('/demo')
 
-  return <DashboardClient email={user.email ?? ''} accessType={accessType} daysLeft={daysLeft} />
+  return <DashboardClient email={user.email ?? ''} accessType={accessType} daysLeft={null} />
 }

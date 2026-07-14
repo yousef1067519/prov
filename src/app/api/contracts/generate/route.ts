@@ -10,6 +10,9 @@ Date: ${today}
 Between: ${d.agencyName} ("Agency") and ${d.creatorName} ("Creator")
 Campaign: ${d.campaignName} (${d.niche})
 
+HOW TO SIGN
+You can accept this agreement electronically. Reply to the email that delivered it with the words "I AGREE" (or sign the block at the end). Under the U.S. ESIGN Act and the Uniform Electronic Transactions Act (UETA), your electronic reply is a legally binding signature with the same effect as a handwritten one. The date and time of your reply will be recorded as the execution date.
+
 1. DELIVERABLES
    ${d.deliverables}
 
@@ -35,6 +38,7 @@ Campaign: ${d.campaignName} (${d.niche})
    Either party may terminate for material breach with 7 days' written notice. Work completed to date is payable.
 
 9. SIGNATURES
+   Accept electronically by replying "I AGREE" to the delivery email, or sign here:
    ${d.agencyName}: __________________   Date: ________
    ${d.creatorName}: _________________   Date: ________`
   }
@@ -44,6 +48,9 @@ Date: ${today}
 Between: ${d.agencyName} ("Agency") and ${d.sponsorName} ("Brand")
 Campaign: ${d.campaignName} (${d.niche})
 Creator promoted: ${d.creatorName}
+
+HOW TO SIGN
+You can accept this agreement electronically. Reply to the email that delivered it with the words "I AGREE" (or sign the block at the end). Under the U.S. ESIGN Act and the Uniform Electronic Transactions Act (UETA), your electronic reply is a legally binding signature with the same effect as a handwritten one. The date and time of your reply will be recorded as the execution date.
 
 1. CAMPAIGN SCOPE
    ${d.deliverables}, delivered by the Agency through ${d.creatorName}.
@@ -67,6 +74,7 @@ Creator promoted: ${d.creatorName}
    Either party may terminate for material breach with 7 days' written notice. Fees for delivered work remain payable.
 
 8. SIGNATURES
+   Accept electronically by replying "I AGREE" to the delivery email, or sign here:
    ${d.agencyName}: __________________   Date: ________
    ${d.sponsorName}: _________________   Date: ________`
 }

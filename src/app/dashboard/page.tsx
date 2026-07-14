@@ -1,4 +1,5 @@
 import { createServerClient } from '@supabase/ssr'
+import { createClient } from '@supabase/supabase-js'
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 import DashboardHome from './DashboardHome'
@@ -26,22 +27,32 @@ export default async function DashboardPage() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
+  // Workspace members (they joined someone else's account) get access via that workspace —
+  // they don't need their own trial. Checked with the service role so RLS can't hide it.
+  const admin = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL ?? 'https://placeholder.supabase.co',
+    process.env.SUPABASE_SERVICE_ROLE_KEY ?? 'placeholder',
+    { auth: { persistSession: false } },
+  )
+  const { data: membership } = await admin
+    .from('team_members')
+    .select('owner_id')
+    .eq('member_user_id', user.id)
+    .eq('status', 'active')
+    .maybeSingle()
+  if (membership) {
+    return <DashboardHome email={user.email ?? ''} accessType="member" daysLeft={null} />
+  }
+
   const { data: profile } = await supabase
     .from('profiles')
     .select('access_type, trial_end')
     .eq('id', user.id)
     .single()
 
+  // ENTERPRISE (§8.1): admin-provisioned access only — no trial gating.
   const accessType = profile?.access_type ?? 'none'
-  const trialEnd = profile?.trial_end ? new Date(profile.trial_end) : null
-  const now = new Date()
-  const hasAccess = accessType === 'lifetime' || (accessType === 'trial' && trialEnd && trialEnd > now)
+  if (!['lifetime', 'standard', 'vip'].includes(accessType)) redirect('/demo')
 
-  if (!hasAccess) redirect('/trial')
-
-  const daysLeft = accessType === 'trial' && trialEnd
-    ? Math.max(0, Math.ceil((trialEnd.getTime() - now.getTime()) / 86400000))
-    : null
-
-  return <DashboardHome email={user.email ?? ''} accessType={accessType} daysLeft={daysLeft} />
+  return <DashboardHome email={user.email ?? ''} accessType={accessType} daysLeft={null} />
 }

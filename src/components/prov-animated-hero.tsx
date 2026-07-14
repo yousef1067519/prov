@@ -140,7 +140,7 @@ function LeadForm() {
     e.preventDefault()
     if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { setError('Enter a valid email address.'); return }
     setError(''); setLoading(true)
-    router.push(`/trial?email=${encodeURIComponent(email)}`)
+    router.push(`/demo`)
   }
 
   return (
@@ -289,7 +289,7 @@ export default function ProvAnimatedHero() {
         </motion.div>
 
         <motion.div {...reveal(0.75)} style={{ display: 'flex', gap: 14, justifyContent: 'center', flexWrap: 'wrap', marginBottom: 22 }}>
-          <a href="/trial" className="btn-gold" style={{ fontSize: '1.0625rem', padding: '15px 30px' }}>
+          <a href="/demo" className="btn-gold" style={{ fontSize: '1.0625rem', padding: '15px 30px' }}>
             Take Your Time Back <ArrowRight size={18} />
           </a>
           <a href="#how-it-works" className="btn-outline-gold" style={{ fontSize: '1.0625rem', padding: '15px 26px' }}>

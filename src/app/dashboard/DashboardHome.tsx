@@ -3,8 +3,12 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
-import { Plus, FolderKanban, Mail, FileText, BarChart3, Briefcase, ChevronRight, CheckCircle2, Clock, Megaphone } from 'lucide-react'
+import { Plus, FolderKanban, Mail, FileText, BarChart3, Briefcase, ChevronRight, CheckCircle2, Clock, Megaphone, Zap } from 'lucide-react'
+import { useRouter } from 'next/navigation'
 import DashboardShell from './DashboardShell'
+import FirstWinTracker from './FirstWinTracker'
+import { getLocalCampaigns, mergeCampaigns } from '@/lib/localCampaigns'
+import { isOnboarded, markOnboarded } from '@/lib/onboarding'
 
 interface ActiveCampaign { id: string; name: string; niche: string; step: 1 | 2; status: string; step2Date?: string }
 
@@ -13,6 +17,7 @@ const QUICK = [
   { label: 'Manage Campaigns', desc: 'View and edit existing campaigns', href: '/dashboard/campaign', Icon: FolderKanban },
   { label: 'Email Outreach', desc: 'Send emails to creators and sponsors', href: '/dashboard/campaign?step=3', Icon: Mail },
   { label: 'Generate Contracts', desc: 'Influencer and sponsor agreements', href: '/dashboard/campaign?step=4', Icon: FileText },
+  { label: 'Workflows', desc: 'Guided step-by-step routines for closing deals', href: '/dashboard/workflows', Icon: Zap },
   { label: 'Analytics', desc: 'Revenue, reply rates, growth', href: '/dashboard/analytics', Icon: BarChart3 },
   { label: 'Branding', desc: 'Your agency profile and signature', href: '/dashboard/settings', Icon: Briefcase },
 ]
@@ -20,20 +25,40 @@ const QUICK = [
 const money = (n: number) => '$' + Math.round(n).toLocaleString()
 
 export default function DashboardHome({ email, accessType, daysLeft }: { email: string; accessType: string; daysLeft: number | null }) {
+  const router = useRouter()
   const [campaigns, setCampaigns] = useState<ActiveCampaign[]>([])
   const [loaded, setLoaded] = useState(false)
+  const [serverCount, setServerCount] = useState<number | null>(null)
+  const [gated, setGated] = useState(false)
   const [m, setM] = useState({ campaigns: 0, contacted: 0, replies: 0, deals: 0, revenue: 0 })
 
+  // Activation gate (per-account): a user who hasn't onboarded and has no real
+  // campaigns is pushed through the guided onboarding flow. We use the SERVER
+  // campaign count (not browser-local ones) so switching test logins works.
   useEffect(() => {
+    if (!loaded || serverCount === null) return
+    if (isOnboarded(email)) return
+    if (serverCount > 0) { markOnboarded(email); return }
+    setGated(true)
+    router.replace('/onboarding')
+  }, [loaded, serverCount, email, router])
+
+  useEffect(() => {
+    const render = (list: { id: string; name: string; niche?: string; status?: string; current_step?: number }[]) =>
+      setCampaigns(list.map(c => ({
+        id: c.id, name: c.name, niche: c.niche ?? 'General',
+        step: (c.current_step === 2 ? 2 : 1) as 1 | 2,
+        status: c.status === 'active' ? 'In progress' : c.status === 'won' ? 'Closed won' : c.status === 'draft' ? 'Draft' : 'Waiting for influencer rates',
+      })))
+
     fetch('/api/campaigns').then(r => r.json()).then(d => {
-      if (Array.isArray(d.campaigns)) {
-        setCampaigns(d.campaigns.map((c: { id: string; name: string; niche: string; status?: string; current_step?: number }) => ({
-          id: c.id, name: c.name, niche: c.niche,
-          step: (c.current_step === 2 ? 2 : 1) as 1 | 2,
-          status: c.status === 'active' ? 'In progress' : c.status === 'won' ? 'Closed won' : 'Waiting for influencer rates',
-        })))
-      }
-    }).catch(() => {}).finally(() => setLoaded(true))
+      const api = Array.isArray(d.campaigns) ? d.campaigns : []
+      setServerCount(api.length)
+      render(mergeCampaigns(api, getLocalCampaigns()) as { id: string; name: string; niche?: string; status?: string }[])
+    }).catch(() => { setServerCount(0); render(getLocalCampaigns()) }).finally(() => setLoaded(true))
+
+    const onChange = () => render(getLocalCampaigns())
+    window.addEventListener('campaigns-change', onChange)
 
     // Real, per-user metrics (Supabase RLS scopes every count to this account).
     const sb = createClient()
@@ -47,22 +72,31 @@ export default function DashboardHome({ email, accessType, daysLeft }: { email: 
       const revenue = Array.isArray(inv.data) ? inv.data.reduce((s: number, row: { amount: number }) => s + Number(row.amount), 0) : 0
       setM({ campaigns: c.count ?? 0, contacted: e.count ?? 0, replies: r.count ?? 0, deals: d.count ?? 0, revenue })
     }).catch(() => {})
+
+    return () => window.removeEventListener('campaigns-change', onChange)
   }, [])
 
   const replyRate = m.contacted ? Math.round((m.replies / m.contacted) * 100) : 0
   const METRICS: [string, string, string][] = [
-    ['Active campaigns', String(m.campaigns), '#FFD700'],
+    ['Active campaigns', String(Math.max(m.campaigns, campaigns.length)), '#FFD700'],
     ['Influencers contacted', String(m.contacted), '#667eea'],
     ['Reply rate', `${replyRate}%`, '#38bdf8'],
     ['Deals closed', String(m.deals), '#00D084'],
     ['Revenue (paid)', money(m.revenue), '#00D084'],
   ]
 
+  if (gated) return null // redirecting to onboarding
+
   return (
     <DashboardShell active="dashboard" email={email} accessType={accessType} daysLeft={daysLeft}>
       <div style={{ padding: '32px 28px', maxWidth: 1100, margin: '0 auto' }}>
         <h1 style={{ fontSize: '1.75rem', fontWeight: 900, color: '#f5f5f5', fontFamily: 'var(--font-display)', letterSpacing: '-0.02em' }}>Dashboard</h1>
         <p style={{ color: '#666', marginTop: 4, marginBottom: 24 }}>Welcome back. Pick what you want to do, or check where your campaigns stand.</p>
+
+        {/* Milestone-based trial status — only while on trial */}
+
+        {/* First-win tracker — perceived progress toward the activation milestone */}
+        <FirstWinTracker />
 
         {/* Quick actions */}
         <p style={{ fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#555', marginBottom: 14 }}>Quick actions</p>

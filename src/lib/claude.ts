@@ -33,6 +33,38 @@ Write a short, professional response that moves this deal forward. Be direct, co
   return (msg.content[0] as { text: string }).text
 }
 
+/** Parse a natural-language creator search into structured filters using Claude. */
+export async function parseDiscoveryQuery(query: string) {
+  const client = getAnthropicClient()
+  const msg = await client.messages.create({
+    model: 'claude-sonnet-4-6',
+    max_tokens: 300,
+    messages: [{
+      role: 'user',
+      content: `Extract creator-search filters from this request and return ONLY JSON (no prose):
+
+"${query}"
+
+Schema (omit any field not mentioned):
+{
+  "niche": "Tech|Beauty|Fitness|Gaming|Food|Travel|Finance|Fashion|Lifestyle|Business|Education",
+  "min_followers": number,
+  "max_followers": number,
+  "min_engagement": number,
+  "min_avg_views": number,
+  "country": ["United States", ...],
+  "platform": "YouTube|Instagram|TikTok|Twitch|LinkedIn|Twitter/X",
+  "language": "English|Spanish|..."
+}
+Convert 50k→50000, 1.2m→1200000. Return only the JSON object.`,
+    }],
+  })
+  const text = (msg.content[0] as { text: string }).text
+  const match = text.match(/\{[\s\S]*\}/)
+  if (!match) throw new Error('No JSON in response')
+  return JSON.parse(match[0])
+}
+
 export interface ContractInput {
   type: 'influencer' | 'sponsor'
   agencyName: string
@@ -64,7 +96,11 @@ export async function generateContract(data: ContractInput): Promise<string> {
 
 Deal terms: deliverables = ${data.deliverables}; fee = ${data.amount}; timeline = ${data.timeline}.
 
+Near the top, immediately after the parties and campaign line, include a short "HOW TO SIGN" section stating that the recipient can accept electronically by replying to the delivery email with the words "I AGREE" (or signing the block at the end), that under the U.S. ESIGN Act and UETA this electronic reply is a legally binding signature equal to a handwritten one, and that the reply date is the execution date.
+
 Include numbered sections covering: ${clauses}
+
+End with a signatures block that says acceptance can be electronic ("reply I AGREE") or by signing the lines.
 
 Plain English, no legalese padding. Use [BRACKETED] placeholders for anything not provided. Output only the contract text.`,
     }],

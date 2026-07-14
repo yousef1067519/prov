@@ -122,7 +122,7 @@ export default function RoiCalculatorSection() {
                 <Clock size={14} style={{ color: '#FFD700' }} />
                 That is <span style={{ color: '#e8e8e8', fontWeight: 600 }}>{r.hoursPerYear.toLocaleString()} hours</span> off your calendar this year.
               </div>
-              <Link href="/trial" className="btn-gold" style={{ width: '100%', fontSize: '1.0625rem', padding: '15px' }}>
+              <Link href="/demo" className="btn-gold" style={{ width: '100%', fontSize: '1.0625rem', padding: '15px' }}>
                 Claim Your Free Month <ArrowRight size={18} />
               </Link>
             </div>

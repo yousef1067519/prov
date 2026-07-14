@@ -1,10 +1,10 @@
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
-import BrandingSettings from '../BrandingSettings'
+import SettingsPanel from '../SettingsPanel'
 
 export default async function SettingsPage() {
-  if (process.env.DEV_BYPASS_AUTH === 'true') return <BrandingSettings />
+  if (process.env.DEV_BYPASS_AUTH === 'true') return <SettingsPanel email="dev@prov.com" accessType="lifetime" daysLeft={null} />
 
   const cookieStore = await cookies()
   const supabase = createServerClient(
@@ -14,5 +14,5 @@ export default async function SettingsPage() {
   )
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
-  return <BrandingSettings />
+  return <SettingsPanel email={user.email ?? ''} accessType="lifetime" daysLeft={null} />
 }

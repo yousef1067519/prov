@@ -70,7 +70,7 @@ export default function Nav() {
                 onMouseLeave={e => (e.currentTarget.style.color = '#888')}>
                 Sign in
               </Link>
-              <Link href="/trial" className="btn-gold text-sm py-2.5 px-5">Start Free Trial</Link>
+              <Link href="/demo" className="btn-gold text-sm py-2.5 px-5">Request a demo</Link>
             </>
           )}
         </div>
@@ -87,8 +87,8 @@ export default function Nav() {
           {[['Features', '#features'], ['Pricing', '#pricing'], ['FAQ', '#faq']].map(([l, h]) => (
             <a key={l} href={h} className="text-sm" style={{ color: '#888' }} onClick={() => setOpen(false)}>{l}</a>
           ))}
-          <Link href="/trial" className="btn-gold text-sm w-full text-center py-3" onClick={() => setOpen(false)}>
-            Start Free Trial
+          <Link href="/demo" className="btn-gold text-sm w-full text-center py-3" onClick={() => setOpen(false)}>
+            Request a demo
           </Link>
         </div>
       )}

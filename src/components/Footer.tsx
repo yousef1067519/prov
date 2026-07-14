@@ -19,7 +19,7 @@ export default function Footer() {
           <div>
             <p style={{ color: '#333', fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 16 }}>Product</p>
             <ul style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-              {[['Dashboard', '/dashboard'], ['Pricing', '#pricing'], ['Free Trial', '/trial']].map(([l, h]) => (
+              {[['Dashboard', '/dashboard'], ['Pricing', '#pricing'], ['Security', '/security'], ['Request a demo', '/demo']].map(([l, h]) => (
                 <li key={l}><Link href={h} style={{ color: '#555', fontSize: '0.9375rem', textDecoration: 'none' }}
                   onMouseEnter={e => (e.currentTarget.style.color = '#f5f5f5')}
                   onMouseLeave={e => (e.currentTarget.style.color = '#555')}>{l}</Link></li>
@@ -40,8 +40,8 @@ export default function Footer() {
         <div style={{ borderTop: '1px solid #1a1a1a', paddingTop: 28, display: 'flex', flexDirection: 'column', gap: 8, alignItems: 'center' }}>
           <p style={{ color: '#333', fontSize: '0.8125rem' }}>© {new Date().getFullYear()} Prov. All rights reserved.</p>
           <div style={{ display: 'flex', gap: 24 }}>
-            {['Privacy Policy', 'Terms of Service'].map(t => (
-              <Link key={t} href="#" style={{ color: '#333', fontSize: '0.8125rem', textDecoration: 'none' }}>{t}</Link>
+            {[['Privacy Policy', '/privacy'], ['Terms of Service', '/terms']].map(([t, href]) => (
+              <Link key={t} href={href} style={{ color: '#333', fontSize: '0.8125rem', textDecoration: 'none' }}>{t}</Link>
             ))}
           </div>
         </div>

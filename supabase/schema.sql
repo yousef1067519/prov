@@ -17,6 +17,13 @@ create table profiles (
   trial_end timestamptz,
   trial_ip inet,
   lifetime_purchased_at timestamptz,
+  -- White labeling (Feature 5)
+  white_label_enabled boolean default false,
+  white_label_domain text,
+  white_label_logo_url text,
+  white_label_colors jsonb default '{}',
+  white_label_name text,
+  white_label_footer text,
   created_at timestamptz default now(),
   updated_at timestamptz default now()
 );
@@ -42,11 +49,37 @@ create table creators (
   engagement_rate numeric(5,2) not null default 0,
   email text,
   country text,
+  language text,
+  handle text,
+  source text,
+  cpm_estimate numeric default 0,
+  total_revenue_generated numeric default 0,
+  campaigns_count integer default 0,
+  followers_history jsonb default '[]',
+  engagement_history jsonb default '[]',
+  avg_views_history jsonb default '[]',
   created_at timestamptz default now()
 );
 create index creators_niche_idx on creators(niche);
 create index creators_platform_idx on creators(platform);
 create index creators_subscribers_idx on creators(subscribers desc);
+-- Dedupe key for the scraper/importer: one row per (platform, handle).
+-- A real unique constraint (not partial) so upsert ON CONFLICT can use it.
+alter table creators add constraint creators_platform_handle_key unique (platform, handle);
+
+-- Per-creator performance log (Feature 2: Creator Performance Tracking).
+create table if not exists creator_performance (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid references auth.users(id) on delete cascade,
+  creator_id text not null,
+  date date not null default current_date,
+  followers integer not null default 0,
+  engagement numeric(5,2) not null default 0,
+  avg_views integer not null default 0,
+  created_at timestamptz default now(),
+  unique (creator_id, date)
+);
+create index creator_perf_creator_idx on creator_performance(creator_id);
 
 -- Sponsors
 create table sponsors (
@@ -69,9 +102,37 @@ create table campaigns (
   status campaign_status not null default 'draft',
   creator_ids uuid[] default '{}',
   sponsor_ids uuid[] default '{}',
+  client_name text,
+  client_email text,
+  client_access_token text unique,
   created_at timestamptz default now(),
   updated_at timestamptz default now()
 );
+
+-- Client Portal (Feature 4)
+create table if not exists content_approvals (
+  id uuid primary key default gen_random_uuid(),
+  campaign_id uuid references campaigns(id) on delete cascade,
+  access_token text,
+  title text not null,
+  content_url text,
+  preview text,
+  status text not null default 'pending' check (status in ('pending','approved','changes_requested')),
+  comments text,
+  created_at timestamptz default now(),
+  updated_at timestamptz default now()
+);
+create index content_approvals_token_idx on content_approvals(access_token);
+
+create table if not exists portal_messages (
+  id uuid primary key default gen_random_uuid(),
+  campaign_id uuid references campaigns(id) on delete cascade,
+  access_token text,
+  sender text not null default 'client' check (sender in ('client','agency')),
+  message text not null,
+  created_at timestamptz default now()
+);
+create index portal_messages_token_idx on portal_messages(access_token);
 create index campaigns_user_idx on campaigns(user_id);
 
 -- Emails sent
@@ -259,3 +320,93 @@ alter table profiles add column if not exists company_email text;
 alter table profiles add column if not exists company_website text;
 alter table profiles add column if not exists company_phone text;
 alter table profiles add column if not exists company_logo_url text;
+
+-- ── ProvBot system: support tickets + per-user assistant memory ─
+-- Admin dashboard reads all tickets via service role + ADMIN_EMAILS allowlist (no admin RLS).
+create table if not exists support_tickets (
+  id         uuid primary key default gen_random_uuid(),
+  user_id    uuid not null references auth.users(id) on delete cascade,
+  message    text not null,
+  status     text not null default 'open'   check (status   in ('open','in_progress','resolved')),
+  priority   text not null default 'medium' check (priority in ('low','medium','high')),
+  metadata   jsonb default '{}',
+  created_at timestamptz default now(),
+  updated_at timestamptz default now()
+);
+create index if not exists support_tickets_user_idx    on support_tickets(user_id);
+create index if not exists support_tickets_status_idx  on support_tickets(status);
+create index if not exists support_tickets_created_idx on support_tickets(created_at desc);
+alter table support_tickets enable row level security;
+create policy "own tickets read"   on support_tickets for select using (auth.uid() = user_id);
+create policy "own tickets insert" on support_tickets for insert with check (auth.uid() = user_id);
+
+create table if not exists user_memory (
+  user_id         uuid primary key references auth.users(id) on delete cascade,
+  profile         jsonb not null default '{}',
+  history_summary text  not null default '',
+  facts           jsonb not null default '[]',
+  updated_at      timestamptz default now()
+);
+alter table user_memory enable row level security;
+create policy "own memory" on user_memory for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
+
+-- AI Discovery search history (saved searches, off localStorage → DB).
+create table if not exists ai_discoveries (
+  id           uuid primary key default gen_random_uuid(),
+  user_id      uuid not null references auth.users(id) on delete cascade,
+  query        text not null,
+  filters      jsonb default '{}',
+  result_count integer default 0,
+  results      jsonb default '[]',
+  created_at   timestamptz default now()
+);
+create index if not exists ai_discoveries_user_idx on ai_discoveries(user_id, created_at desc);
+alter table ai_discoveries enable row level security;
+create policy "own discoveries" on ai_discoveries for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
+
+-- Saved PDF reports (file in the private 'reports' Storage bucket).
+create table if not exists reports (
+  id            uuid primary key default gen_random_uuid(),
+  user_id       uuid not null references auth.users(id) on delete cascade,
+  campaign_id   text,
+  campaign_name text,
+  file_path     text not null,
+  created_at    timestamptz default now()
+);
+create index if not exists reports_user_idx on reports(user_id, created_at desc);
+alter table reports enable row level security;
+create policy "own reports" on reports for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
+
+-- Feature 2: Team Workspace
+alter table team_members add column if not exists status text not null default 'active'
+  check (status in ('pending', 'active', 'removed'));
+alter table campaigns add column if not exists assigned_to uuid references auth.users(id);
+
+create table if not exists team_activity_log (
+  id uuid primary key default gen_random_uuid(),
+  owner_id uuid not null references auth.users(id) on delete cascade,
+  actor_email text, action text not null, resource_type text, resource_id text,
+  meta jsonb default '{}', created_at timestamptz default now()
+);
+create index if not exists team_activity_owner_idx on team_activity_log(owner_id, created_at desc);
+alter table team_activity_log enable row level security;
+create policy "own activity" on team_activity_log for all using (auth.uid() = owner_id) with check (auth.uid() = owner_id);
+
+create table if not exists internal_notes (
+  id uuid primary key default gen_random_uuid(),
+  campaign_id text not null,
+  owner_id uuid not null references auth.users(id) on delete cascade,
+  author_email text, note text not null,
+  created_at timestamptz default now(), updated_at timestamptz default now()
+);
+create index if not exists internal_notes_campaign_idx on internal_notes(campaign_id, created_at);
+alter table internal_notes enable row level security;
+create policy "own notes" on internal_notes for all using (auth.uid() = owner_id) with check (auth.uid() = owner_id);
+
+-- Feature 5 (partial): outbound notification webhooks
+create table if not exists integration_settings (
+  owner_id uuid primary key references auth.users(id) on delete cascade,
+  slack_webhook_url text, zapier_webhook_url text, updated_at timestamptz default now()
+);
+alter table integration_settings enable row level security;
+create policy "own integrations" on integration_settings for all using (auth.uid() = owner_id) with check (auth.uid() = owner_id);

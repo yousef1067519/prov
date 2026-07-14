@@ -17,7 +17,10 @@ export async function sendEmail(opts: {
 }) {
   const resend = getResend()
   const { data, error } = await resend.emails.send({
-    from: opts.from ?? 'Prov <outreach@prov.com>',
+    // EMAIL_FROM lets you use a verified domain in prod. Default is Resend's shared test
+    // sender, which works immediately with just an API key (but only delivers to your own
+    // Resend account email until you verify a domain).
+    from: opts.from ?? process.env.EMAIL_FROM ?? 'Prov <onboarding@resend.dev>',
     to: opts.to,
     subject: opts.subject,
     text: opts.body,

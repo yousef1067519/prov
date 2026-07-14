@@ -31,7 +31,7 @@ export default function FinalPushSection() {
               Every hour you spend on spreadsheets is an hour they spend closing deals.
             </p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 14, alignItems: 'center' }}>
-              <Link href="/trial" className="btn-gold text-lg px-12 py-5">
+              <Link href="/demo" className="btn-gold text-lg px-12 py-5">
                 Start Free Month <ArrowRight size={20} />
               </Link>
               <Link href="/buy" className="btn-outline-gold text-base px-10 py-4" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>

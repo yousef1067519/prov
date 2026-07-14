@@ -1,9 +1,9 @@
 import type { Metadata } from 'next'
-import { Inter, Space_Grotesk } from 'next/font/google'
+import { Inter, Space_Grotesk, Geist, JetBrains_Mono } from 'next/font/google'
 import './globals.css'
 
-// Body: Inter (clean, readable). Display: Space Grotesk — premium modern-agency
-// pairing per UI/UX Pro Max "Premium Sans" recommendation for SaaS/agencies.
+// Body: Inter. Display: Space Grotesk. Hero: Geist. Mono: JetBrains Mono
+// (terminal/pipeline labels on the marketing site).
 const inter = Inter({ subsets: ['latin'], variable: '--font-sans-loaded', display: 'swap' })
 const spaceGrotesk = Space_Grotesk({
   subsets: ['latin'],
@@ -11,21 +11,28 @@ const spaceGrotesk = Space_Grotesk({
   variable: '--font-display-loaded',
   display: 'swap',
 })
+const geist = Geist({ subsets: ['latin'], variable: '--font-geist-loaded', display: 'swap' })
+const jetbrains = JetBrains_Mono({
+  subsets: ['latin'],
+  weight: ['400', '500', '700'],
+  variable: '--font-mono-loaded',
+  display: 'swap',
+})
 
 export const metadata: Metadata = {
-  title: 'Prov — Stop Cold-Emailing. Start Closing Deals.',
-  description: 'The complete IMA automation platform for agency founders. Find creators, match sponsors, generate emails, and close deals with AI — all in minutes.',
-  keywords: 'influencer marketing agency, IMA automation, creator outreach, sponsor matching, AI email assistant, influencer database',
+  title: 'Prov — The fastest path from brief to booked creator.',
+  description: 'Enterprise platform for influencer marketing agencies: curated discovery, team-standardized outreach, contracts, compliance, and deal intelligence your agency owns forever.',
+  keywords: 'influencer marketing agency platform, creator sponsorship pipeline, agency deal intelligence, FTC compliance tracking, influencer contracts',
   openGraph: {
-    title: 'Prov — Stop Cold-Emailing. Start Closing Deals.',
-    description: 'Automate your entire influencer marketing workflow. 30-day free trial, then $299/month.',
+    title: 'Prov — The fastest path from brief to booked creator.',
+    description: 'The sponsorship pipeline, run end to end — and every completed deal becomes intelligence your agency owns.',
     type: 'website',
   },
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${inter.variable} ${spaceGrotesk.variable}`}>
+    <html lang="en" className={`${inter.variable} ${spaceGrotesk.variable} ${geist.variable} ${jetbrains.variable}`}>
       <body style={{ background: '#0a0a0a', color: '#f5f5f5' }}>
         {children}
       </body>

@@ -4,5 +4,10 @@
   "outputDirectory": ".next",
   "env": {
     "NEXT_PUBLIC_APP_URL": "https://prov.com"
-  }
+  },
+  "crons": [
+    { "path": "/api/cron/followups", "schedule": "0 * * * *" },
+    { "path": "/api/cron/replies", "schedule": "30 * * * *" },
+    { "path": "/api/cron/insights", "schedule": "0 6 * * *" }
+  ]
 }
