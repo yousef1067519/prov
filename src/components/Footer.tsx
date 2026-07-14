@@ -29,7 +29,7 @@ export default function Footer() {
           <div>
             <p style={{ color: '#333', fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 16 }}>Company</p>
             <ul style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-              {[['About', '#'], ['FAQ', '#faq'], ['Contact', 'mailto:hello@prov.com']].map(([l, h]) => (
+              {[['About', '#'], ['FAQ', '#faq'], ['Contact', 'mailto:providemediabrands@gmail.com']].map(([l, h]) => (
                 <li key={l}><Link href={h} style={{ color: '#555', fontSize: '0.9375rem', textDecoration: 'none' }}
                   onMouseEnter={e => (e.currentTarget.style.color = '#f5f5f5')}
                   onMouseLeave={e => (e.currentTarget.style.color = '#555')}>{l}</Link></li>

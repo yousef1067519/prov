@@ -42,11 +42,14 @@ export async function POST(req: NextRequest) {
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
 
   // Invite email (best effort — never blocks the response or leaks failures to the client).
+  // Prefer the configured public URL, else fall back to the live request origin so links
+  // are never dead even before NEXT_PUBLIC_APP_URL is set on the deployment.
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || req.nextUrl.origin
   try {
     await sendEmail({
       to: email,
       subject: 'You’ve been invited to a Prov workspace',
-      body: `You've been invited to join a Prov workspace as a ${role}.\n\nSign in (or sign up) with this email address at ${process.env.NEXT_PUBLIC_APP_URL || 'https://prov.app'}/login to accept.`,
+      body: `You've been invited to join a Prov workspace as a ${role}.\n\nSign in (or sign up) with this email address at ${appUrl}/login to accept.`,
     })
   } catch (e) { console.error('invite email failed:', (e as Error).message) }
 

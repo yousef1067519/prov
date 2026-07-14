@@ -38,8 +38,10 @@ export async function createTicketAndEscalate(
 
   try {
     await sendEmail({
+      // No explicit `from`: falls back to the sendEmail default. Overriding it with an
+      // address on an unverified domain makes Resend reject the send. Set EMAIL_FROM once
+      // a domain is verified to brand these.
       to: SUPPORT_INBOX,
-      from: 'Prov Support <support@prov.com>',
       subject: `[${priority.toUpperCase()}] New support ticket ${data.id}`,
       body:
         `A new support ticket was created.\n\n` +

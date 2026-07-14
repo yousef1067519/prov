@@ -31,6 +31,9 @@ yarn-error.log*
 .pnpm-debug.log*
 dev*.log
 
+# generated lead-gen output (business data, not source)
+scripts/leads_agencies.csv
+
 # env files (can opt-in for committing if needed)
 .env*
 

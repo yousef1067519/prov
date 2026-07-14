@@ -470,7 +470,7 @@ function PrivacyTab() {
             <p style={{ color: '#888', fontSize: '0.8125rem', marginTop: 2 }}>Permanently deletes your account and all data. This cannot be undone.</p>
           </div>
         </div>
-        <button onClick={() => alert('Account deletion is a protected action. Please email support@prov.com to confirm — we verify ownership before deleting any data.')}
+        <button onClick={() => alert('Account deletion is a protected action. Please email providemediabrands@gmail.com to confirm — we verify ownership before deleting any data.')}
           style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)', color: '#f87171', borderRadius: 8, padding: '9px 18px', fontSize: '0.875rem', cursor: 'pointer', fontWeight: 600 }}>
           Delete my account
         </button>
