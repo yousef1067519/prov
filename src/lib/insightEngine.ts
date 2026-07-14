@@ -1,4 +1,4 @@
-import Anthropic from '@anthropic-ai/sdk'
+import { aiChat } from './claude'
 import type { SupabaseClient } from '@supabase/supabase-js'
 
 // ProvBot insight generation: summarize a creator's tracked campaigns and ask
@@ -41,10 +41,8 @@ export async function generateCreatorInsights(
     score: r.performance_score,
   }))
 
-  const anthropic = new Anthropic()
-  const msg = await anthropic.messages.create({
-    model: 'claude-haiku-4-5',
-    max_tokens: 1200,
+  const text = await aiChat({
+    maxTokens: 1200,
     messages: [{
       role: 'user',
       content: `You are ProvBot, the analytics engine of an influencer-marketing platform. Analyze this creator's sponsored-campaign history and return 3-6 insights an agency could quote to a brand or use to plan the next deal.
@@ -65,7 +63,6 @@ Rules:
     }],
   })
 
-  const text = msg.content[0]?.type === 'text' ? msg.content[0].text : '[]'
   const jsonStart = text.indexOf('[')
   const jsonEnd = text.lastIndexOf(']')
   if (jsonStart === -1 || jsonEnd === -1) return []

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { generateContract, type ContractInput } from '@/lib/claude'
+import { generateContract, aiEnabled, type ContractInput } from '@/lib/claude'
 
 function fallbackContract(d: ContractInput): string {
   const today = new Date().toISOString().slice(0, 10)
@@ -94,7 +94,7 @@ export async function POST(req: NextRequest) {
 
   async function build(type: 'influencer' | 'sponsor') {
     const input: ContractInput = { ...base, type }
-    if (!process.env.ANTHROPIC_API_KEY) return fallbackContract(input)
+    if (!aiEnabled()) return fallbackContract(input)
     try { return await generateContract(input) } catch { return fallbackContract(input) }
   }
 

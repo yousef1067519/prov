@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { generateEmailTemplates } from '@/lib/claude'
+import { generateEmailTemplates, aiEnabled } from '@/lib/claude'
 
 export async function POST(req: NextRequest) {
   const body = await req.json()
@@ -14,7 +14,7 @@ export async function POST(req: NextRequest) {
   }
 
   // Dev/no-key fallback: return realistic mock templates so the flow is testable
-  if (!process.env.ANTHROPIC_API_KEY) {
+  if (!aiEnabled()) {
     const first = String(influencerName).split(' ')[0]
     return NextResponse.json({
       templates: {

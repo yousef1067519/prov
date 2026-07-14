@@ -1,12 +1,52 @@
-import Anthropic from '@anthropic-ai/sdk'
+// AI helper — backed by DeepSeek (OpenAI-compatible API). The filename is kept as
+// claude.ts only so existing '@/lib/claude' imports don't churn; there is no Anthropic
+// dependency anymore. Uses deepseek-chat, DeepSeek's cheapest model.
+//
+// Requires DEEPSEEK_API_KEY (get one at https://platform.deepseek.com/api_keys).
 
-let _client: Anthropic | null = null
+const DEEPSEEK_URL = 'https://api.deepseek.com/chat/completions'
+const MODEL = 'deepseek-chat' // cheapest DeepSeek model (V3, non-reasoning)
 
-export function getAnthropicClient() {
-  if (!_client) {
-    _client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
+export type ChatMessage = { role: 'system' | 'user' | 'assistant'; content: string }
+
+/** True when an AI key is configured. Call sites use this to decide fallback vs. live. */
+export function aiEnabled(): boolean {
+  return Boolean(process.env.DEEPSEEK_API_KEY)
+}
+
+/**
+ * Single entry point for all model calls. Returns the assistant's text.
+ * `jsonMode` turns on DeepSeek's JSON output mode (the prompt must mention JSON).
+ */
+export async function aiChat(opts: {
+  messages: ChatMessage[]
+  system?: string
+  maxTokens?: number
+  jsonMode?: boolean
+}): Promise<string> {
+  const key = process.env.DEEPSEEK_API_KEY
+  if (!key) throw new Error('DEEPSEEK_API_KEY is not set')
+
+  const messages = opts.system
+    ? [{ role: 'system' as const, content: opts.system }, ...opts.messages]
+    : opts.messages
+
+  const res = await fetch(DEEPSEEK_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${key}` },
+    body: JSON.stringify({
+      model: MODEL,
+      messages,
+      max_tokens: opts.maxTokens ?? 800,
+      ...(opts.jsonMode ? { response_format: { type: 'json_object' } } : {}),
+    }),
+  })
+  if (!res.ok) {
+    const detail = await res.text().catch(() => '')
+    throw new Error(`DeepSeek API ${res.status}: ${detail.slice(0, 300)}`)
   }
-  return _client
+  const data = await res.json()
+  return String(data?.choices?.[0]?.message?.content ?? '')
 }
 
 export async function suggestEmailResponse(replyMessage: string, context: {
@@ -14,10 +54,8 @@ export async function suggestEmailResponse(replyMessage: string, context: {
   recipientType: 'creator' | 'sponsor'
   originalSubject: string
 }) {
-  const client = getAnthropicClient()
-  const msg = await client.messages.create({
-    model: 'claude-sonnet-4-6',
-    max_tokens: 500,
+  return aiChat({
+    maxTokens: 500,
     messages: [{
       role: 'user',
       content: `You are an expert influencer marketing agency deal closer.
@@ -29,16 +67,13 @@ Their reply: "${replyMessage}"
 Write a short, professional response that moves this deal forward. Be direct, confident, and focused on closing. No fluff. Max 150 words. Output ONLY the email body, no subject line.`,
     }],
   })
-
-  return (msg.content[0] as { text: string }).text
 }
 
-/** Parse a natural-language creator search into structured filters using Claude. */
+/** Parse a natural-language creator search into structured filters. */
 export async function parseDiscoveryQuery(query: string) {
-  const client = getAnthropicClient()
-  const msg = await client.messages.create({
-    model: 'claude-sonnet-4-6',
-    max_tokens: 300,
+  const text = await aiChat({
+    maxTokens: 300,
+    jsonMode: true,
     messages: [{
       role: 'user',
       content: `Extract creator-search filters from this request and return ONLY JSON (no prose):
@@ -59,7 +94,6 @@ Schema (omit any field not mentioned):
 Convert 50k→50000, 1.2m→1200000. Return only the JSON object.`,
     }],
   })
-  const text = (msg.content[0] as { text: string }).text
   const match = text.match(/\{[\s\S]*\}/)
   if (!match) throw new Error('No JSON in response')
   return JSON.parse(match[0])
@@ -79,7 +113,6 @@ export interface ContractInput {
 
 /** Generate one contract body (influencer or sponsor) with the standard clauses. */
 export async function generateContract(data: ContractInput): Promise<string> {
-  const client = getAnthropicClient()
   const who = data.type === 'influencer'
     ? `the creator (${data.creatorName})`
     : `the brand/sponsor (${data.sponsorName})`
@@ -87,9 +120,8 @@ export async function generateContract(data: ContractInput): Promise<string> {
     ? 'deliverables, timeline and deadlines, payment amount and schedule, content usage rights and duration, exclusivity (no competitor promotion), FTC disclosure requirements, revisions allowed, and termination.'
     : 'campaign scope, budget and payment schedule (e.g. 50/50), deliverables expected, timeline, the creator being promoted, brand usage rights, performance expectations, confidentiality, and termination.'
 
-  const msg = await client.messages.create({
-    model: 'claude-sonnet-4-6',
-    max_tokens: 1400,
+  return aiChat({
+    maxTokens: 1400,
     messages: [{
       role: 'user',
       content: `Draft a clear, professional influencer-marketing agreement between ${data.agencyName} (the agency) and ${who} for the campaign "${data.campaignName}" in the ${data.niche} niche.
@@ -105,7 +137,6 @@ End with a signatures block that says acceptance can be electronic ("reply I AGR
 Plain English, no legalese padding. Use [BRACKETED] placeholders for anything not provided. Output only the contract text.`,
     }],
   })
-  return (msg.content[0] as { text: string }).text
 }
 
 export async function generateEmailTemplates(data: {
@@ -119,12 +150,11 @@ export async function generateEmailTemplates(data: {
   sponsorBudget: string
   agencyName?: string
 }) {
-  const client = getAnthropicClient()
   const fmt = (n: number) => n >= 1_000_000 ? `${(n/1_000_000).toFixed(1)}M` : `${(n/1_000).toFixed(0)}K`
 
-  const msg = await client.messages.create({
-    model: 'claude-sonnet-4-6',
-    max_tokens: 1500,
+  const text = await aiChat({
+    maxTokens: 1500,
+    jsonMode: true,
     messages: [{
       role: 'user',
       content: `Generate 3 email templates for an influencer marketing deal. Return ONLY valid JSON.
@@ -148,7 +178,6 @@ Rules:
     }],
   })
 
-  const text = (msg.content[0] as { text: string }).text
   const match = text.match(/\{[\s\S]*\}/)
   if (!match) throw new Error('Invalid AI response format')
   return JSON.parse(match[0]) as {

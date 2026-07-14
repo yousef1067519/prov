@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
-import { getAnthropicClient } from '@/lib/claude'
+import { aiChat, aiEnabled } from '@/lib/claude'
 import { loadMemory, saveMemory, applyMemoryUpdates, memoryToPrompt, type UserMemory } from '@/lib/memory'
 import { createTicketAndEscalate, ESCALATION_REPLY, inferPriority } from '@/lib/tickets'
 
@@ -71,8 +71,8 @@ export async function POST(req: NextRequest) {
   const { mem: updated, changed } = applyMemoryUpdates(message, mem)
   if (changed) await saveMemory(supabase, userId, updated).catch(() => {})
 
-  // No-key fallback so ProvBot is demoable without an Anthropic key.
-  if (!process.env.ANTHROPIC_API_KEY) {
+  // No-key fallback so ProvBot is demoable without an AI key.
+  if (!aiEnabled()) {
     const hi = updated.profile.name ? `, ${updated.profile.name}` : ''
     return NextResponse.json({
       reply: `Hi${hi}! I'm ProvBot. I can help you navigate Prov — finding creators, matching sponsors, drafting outreach, or troubleshooting. What would you like to do?`,
@@ -80,18 +80,16 @@ export async function POST(req: NextRequest) {
     })
   }
 
-  // 3) Ask Claude, personalized by memory
+  // 3) Ask the model, personalized by memory
   try {
-    const msg = await getAnthropicClient().messages.create({
-      model: 'claude-sonnet-4-6',
-      max_tokens: 600,
+    let reply = await aiChat({
+      maxTokens: 600,
       system: systemPrompt(updated),
       messages: [
         ...history.map(t => ({ role: t.role, content: String(t.content).slice(0, 4000) })),
         { role: 'user' as const, content: message },
       ],
     })
-    let reply = (msg.content[0] as { text: string }).text ?? ''
 
     // Backend-only escalation: create a ticket + notify support, then replace with the safe line.
     let escalated = false

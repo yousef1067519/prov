@@ -1,4 +1,4 @@
-import Anthropic from '@anthropic-ai/sdk'
+import { aiChat, aiEnabled } from './claude'
 import { serviceClient } from './apiUser'
 import { accessTokenForUser } from './googleTokens'
 
@@ -18,19 +18,16 @@ export interface ReplySyncResult {
 /** interested / negotiating / declined from the reply text. */
 async function classifyReply(text: string): Promise<string> {
   const t = text.toLowerCase()
-  if (process.env.ANTHROPIC_API_KEY) {
+  if (aiEnabled()) {
     try {
-      const anthropic = new Anthropic()
-      const msg = await anthropic.messages.create({
-        model: 'claude-haiku-4-5',
-        max_tokens: 10,
+      const out = await aiChat({
+        maxTokens: 10,
         messages: [{
           role: 'user',
           content: `A creator replied to a sponsorship outreach email. Classify their reply as exactly one word — interested, negotiating, or declined.\n\nReply:\n${text.slice(0, 2000)}`,
         }],
       })
-      const first = msg.content.find(b => b.type === 'text')
-      const label = first && 'text' in first ? first.text.trim().toLowerCase() : ''
+      const label = out.trim().toLowerCase()
       if (['interested', 'negotiating', 'declined'].includes(label)) return label
     } catch { /* fall through to heuristic */ }
   }
@@ -41,21 +38,18 @@ async function classifyReply(text: string): Promise<string> {
 
 /** Draft a suggested response to send back to the creator. */
 async function suggestReply(creatorReply: string, dealStatus: string): Promise<string | null> {
-  if (!process.env.ANTHROPIC_API_KEY) return null
+  if (!aiEnabled()) return null
   try {
-    const anthropic = new Anthropic()
     const prompts: Record<string, string> = {
       interested: `A creator replied "yes" to a sponsorship pitch. Draft a SHORT (1-2 sentences) next-step email: confirm details, send contract, or schedule a call. Be warm and concise.\n\nTheir reply:\n${creatorReply.slice(0, 500)}`,
       negotiating: `A creator replied with budget/terms questions to a sponsorship pitch. Draft a SHORT (2-3 sentences) response addressing their concern and moving toward a deal. Be helpful and clear.\n\nTheir reply:\n${creatorReply.slice(0, 500)}`,
       declined: `A creator declined a sponsorship pitch. Draft a SHORT (1 sentence) graceful exit that leaves the door open for future collabs.\n\nTheir reply:\n${creatorReply.slice(0, 500)}`,
     }
-    const msg = await anthropic.messages.create({
-      model: 'claude-haiku-4-5',
-      max_tokens: 80,
+    const out = await aiChat({
+      maxTokens: 80,
       messages: [{ role: 'user', content: prompts[dealStatus] || prompts.interested }],
     })
-    const first = msg.content.find(b => b.type === 'text')
-    return first && 'text' in first ? first.text.trim() : null
+    return out.trim() || null
   } catch { return null }
 }
 

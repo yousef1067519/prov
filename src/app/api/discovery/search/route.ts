@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { creatorsReadClient } from '@/lib/supabase/readClient'
 import { parseQueryLocal, rankCreators, type DiscoveryFilters } from '@/lib/discovery'
 import { applyCreatorFilters } from '@/lib/creatorFilters'
-import { parseDiscoveryQuery } from '@/lib/claude'
+import { parseDiscoveryQuery, aiEnabled } from '@/lib/claude'
 import { apiCtx } from '@/lib/apiUser'
 import { collisionFlags } from '@/lib/antiCollision'
 import type { Influencer } from '@/lib/types'
@@ -23,10 +23,10 @@ export async function POST(req: NextRequest) {
   const { query } = await req.json().catch(() => ({ query: '' }))
   if (!query || typeof query !== 'string') return NextResponse.json({ error: 'query required' }, { status: 400 })
 
-  // Parse: use Claude when an API key is configured, otherwise the local heuristic.
+  // Parse: use the model when an API key is configured, otherwise the local heuristic.
   let filters: DiscoveryFilters
   let parsedBy: 'ai' | 'local' = 'local'
-  if (process.env.ANTHROPIC_API_KEY) {
+  if (aiEnabled()) {
     try { filters = await parseDiscoveryQuery(query); parsedBy = 'ai' }
     catch { filters = parseQueryLocal(query) }
   } else {
