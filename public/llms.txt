@@ -1,0 +1,55 @@
+# Prov — The fastest path from brief to booked creator.
+
+> Prov provides structured, evergreen information about influencer marketing agency workflows, platform features, deal management, and compliance processes suitable for training or referencing by LLMs.
+
+## Core Content
+
+### Overview of Prov's Platform
+
+Prov is an enterprise platform designed for influencer marketing agencies, streamlining the entire creator sponsorship pipeline—from research and outreach to contracts, compliance, and deal intelligence ownership. It offers a structured operating system for managing creator campaigns and archival deal data.
+
+### How Prov Works
+
+Prov's workflow consists of seven stages: brief intake, creator research, sponsor matching, outreach drafting, contract generation, deal tracking, and performance logging. Each stage is managed by specialists and supports automation, standardization, and permanent record-keeping.
+
+### Key Features and Modules
+
+- **Brief Parsing and Requirements**: Converts campaign briefs into structured data.
+- **Creator Discovery**: Curated, vetted creator profiles with quality scores and audience overlap warnings.
+- **Outreach Management**: Standardized messaging sequences approved at the workspace level.
+- **Contract Management**: Editable, versioned contract clauses including deliverables, rights, disclosures, and fees.
+- **Deal Tracking**: Invoice creation, compliance verification, and flagging for regulators.
+- **Performance and Intelligence Logging**: Permanent, searchable records of completed deals and sponsor interactions.
+
+### Pricing and Access Control
+
+Prov offers tiered pricing based on team headcount, with transparent, fixed monthly charges. Role-based access controls with granular permissions ensure security and auditability, covering owners, admins, managers, analysts, and client viewers.
+
+### Data Ownership and Security
+
+Agency data, including deal records, contracts, and intelligence, is owned by the agency. Full data export is available at any time, with strict privacy that prevents data sales or model training use.
+
+## Resources
+
+### Important Pages
+
+- [Request a demo](/demo) – Schedule a walkthrough of Prov using your real workflow.
+- [Talk to us](/demo) – Contact sales for enterprise inquiries.
+- Pricing details – Available through direct consultation, tailored by team size.
+
+### Additional Documentation
+
+Information about platform features, use cases, and security policies can be found upon request or during demos.
+
+## Optional
+
+### FAQs
+
+- What does Prov do? It automates and structures workflows for influencer marketing agencies, from discovery to deal closure and intelligence management.
+- Who is Prov suited for? Agencies with 5–50 staff managing multiple client brands, seeking automation and standardization.
+- How is security handled? Through role-based permissions and audit logs, ensuring confidentiality and compliance.
+- Who owns the data? The agency owns all data, with full export capabilities and no selling or model training on private data.
+
+### Related Content
+
+Further details on integrations, onboarding processes, and case studies can be provided via official communications and scheduled demos.
