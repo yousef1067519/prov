@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { slugify } from 'babylovegrowth-next-js-blog';
+import { slugify } from '../format';
 import { BLOG_BASE_PATH } from '../constants';
 
 export function TagList({ keywords }: { keywords: string[] }) {

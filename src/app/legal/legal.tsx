@@ -21,7 +21,7 @@ export function LegalPage({ title, updated, children }: { title: string; updated
         <p style={{ color: '#666', fontSize: '0.875rem', marginBottom: 36 }}>Last updated {updated}</p>
         <div className="legal-body" style={{ fontSize: '0.9375rem', lineHeight: 1.75 }}>{children}</div>
         <p style={{ color: '#555', fontSize: '0.8125rem', marginTop: 48, paddingTop: 20, borderTop: '1px solid #161616' }}>
-          This document is a starting template and not legal advice. Have it reviewed by a lawyer for your jurisdiction before launch.
+          Questions about this document? Contact us at providemediabrands@gmail.com.
         </p>
       </main>
     </div>

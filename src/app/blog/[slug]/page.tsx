@@ -30,12 +30,12 @@ export async function generateMetadata({
   const canonical = SITE_URL ? `${SITE_URL}${BLOG_BASE_PATH}/${article.slug}` : undefined;
   return {
     title: article.title,
-    description: article.meta_description,
+    description: article.meta_description ?? undefined,
     alternates: canonical ? { canonical } : undefined,
     openGraph: {
       type: 'article',
       title: article.title,
-      description: article.meta_description,
+      description: article.meta_description ?? undefined,
       url: canonical,
       images: article.hero_image_url ? [{ url: article.hero_image_url }] : undefined,
       publishedTime: article.created_at,

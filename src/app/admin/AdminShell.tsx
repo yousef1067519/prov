@@ -2,18 +2,20 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { Ticket, Building2, BarChart3, Settings, ArrowLeft, ShieldCheck } from 'lucide-react'
+import { Ticket, Building2, BarChart3, Settings, ArrowLeft, ShieldCheck, FileText } from 'lucide-react'
 import AdminInbox from './AdminInbox'
 import AdminDemos from './AdminDemos'
+import AdminBlog from './AdminBlog'
 
-type Tab = 'tickets' | 'demos'
+type Tab = 'tickets' | 'demos' | 'blog'
 const NAV: Array<{ key: Tab | 'analytics' | 'settings'; label: string; Icon: typeof Ticket; soon?: boolean }> = [
   { key: 'tickets', label: 'Tickets', Icon: Ticket },
   { key: 'demos', label: 'Demo requests', Icon: Building2 },
+  { key: 'blog', label: 'Blog', Icon: FileText },
   { key: 'analytics', label: 'Analytics', Icon: BarChart3, soon: true },
   { key: 'settings', label: 'Settings', Icon: Settings, soon: true },
 ]
-const TITLE: Record<Tab, string> = { tickets: 'Support Tickets', demos: 'Demo Requests' }
+const TITLE: Record<Tab, string> = { tickets: 'Support Tickets', demos: 'Demo Requests', blog: 'Blog' }
 
 export default function AdminShell({ adminEmail }: { adminEmail: string }) {
   const [tab, setTab] = useState<Tab>('tickets')
@@ -62,7 +64,7 @@ export default function AdminShell({ adminEmail }: { adminEmail: string }) {
           </div>
         </header>
         <main style={{ padding: '22px' }}>
-          {tab === 'tickets' ? <AdminInbox /> : <AdminDemos />}
+          {tab === 'tickets' ? <AdminInbox /> : tab === 'demos' ? <AdminDemos /> : <AdminBlog />}
         </main>
       </div>
     </div>

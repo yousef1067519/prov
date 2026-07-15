@@ -1,6 +1,6 @@
 import Image from 'next/image';
 import Link from 'next/link';
-import type { BlogArticleSummary } from 'babylovegrowth-next-js-blog';
+import type { BlogArticleSummary } from '../types';
 import { BLOG_BASE_PATH } from '../constants';
 import { formatDate } from '../format';
 
