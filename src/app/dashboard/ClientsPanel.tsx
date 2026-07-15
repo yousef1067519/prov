@@ -6,6 +6,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import DashboardShell from './DashboardShell'
+import { parseCsv, mapRows } from '@/lib/csv'
 import { Building2, Plus, Trash2, Upload, Loader2, X, Check, Mail, Tag, User } from 'lucide-react'
 
 interface Client {
@@ -20,59 +21,15 @@ interface Client {
 
 type ParsedClient = { name: string; industry?: string; contact_name?: string; contact_email?: string; notes?: string }
 
-// --- CSV parsing -----------------------------------------------------------
-// Minimal RFC-4180-ish parser: handles quoted fields, escaped quotes, commas
-// and newlines inside quotes. Good enough for spreadsheets exported to CSV.
-function parseCsv(text: string): string[][] {
-  const rows: string[][] = []
-  let row: string[] = []
-  let field = ''
-  let inQuotes = false
-  const s = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n')
-  for (let i = 0; i < s.length; i++) {
-    const c = s[i]
-    if (inQuotes) {
-      if (c === '"') {
-        if (s[i + 1] === '"') { field += '"'; i++ }
-        else inQuotes = false
-      } else field += c
-    } else if (c === '"') inQuotes = true
-    else if (c === ',') { row.push(field); field = '' }
-    else if (c === '\n') { row.push(field); rows.push(row); row = []; field = '' }
-    else field += c
-  }
-  if (field.length || row.length) { row.push(field); rows.push(row) }
-  return rows.filter(r => r.some(cell => cell.trim() !== ''))
+// Flexible header → field aliases so people's own column names just work.
+const ALIASES: Record<keyof ParsedClient, string[]> = {
+  name: ['name', 'client', 'client name', 'company', 'company name', 'brand', 'account'],
+  industry: ['industry', 'sector', 'category', 'vertical', 'niche'],
+  contact_name: ['contact', 'contact name', 'contact person', 'poc', 'primary contact', 'person'],
+  contact_email: ['email', 'contact email', 'e-mail', 'email address'],
+  notes: ['notes', 'note', 'description', 'comments', 'details'],
 }
-
-// Flexible header → field mapping so people's own column names just work.
-const HEADER_MAP: Record<string, keyof ParsedClient> = {}
-const alias = (field: keyof ParsedClient, names: string[]) => names.forEach(n => { HEADER_MAP[n] = field })
-alias('name', ['name', 'client', 'client name', 'company', 'company name', 'brand', 'account'])
-alias('industry', ['industry', 'sector', 'category', 'vertical', 'niche'])
-alias('contact_name', ['contact', 'contact name', 'contact person', 'poc', 'primary contact', 'person'])
-alias('contact_email', ['email', 'contact email', 'e-mail', 'email address'])
-alias('notes', ['notes', 'note', 'description', 'comments', 'details'])
-
-function rowsToClients(rows: string[][]): ParsedClient[] {
-  if (!rows.length) return []
-  const header = rows[0].map(h => h.trim().toLowerCase())
-  const mapped = header.map(h => HEADER_MAP[h])
-  const hasHeader = mapped.some(Boolean)
-  const dataRows = hasHeader ? rows.slice(1) : rows
-  // No recognizable header → treat col 0 as name, col 1 as industry, etc.
-  const cols: (keyof ParsedClient | undefined)[] = hasHeader
-    ? mapped
-    : ['name', 'industry', 'contact_name', 'contact_email', 'notes']
-
-  const out: ParsedClient[] = []
-  for (const r of dataRows) {
-    const obj: ParsedClient = { name: '' }
-    r.forEach((cell, i) => { const f = cols[i]; if (f) obj[f] = cell.trim() })
-    if (obj.name) out.push(obj)
-  }
-  return out
-}
+const POSITIONAL: (keyof ParsedClient)[] = ['name', 'industry', 'contact_name', 'contact_email', 'notes']
 
 // --- UI --------------------------------------------------------------------
 const inputStyle: React.CSSProperties = {
@@ -133,7 +90,7 @@ export default function ClientsPanel() {
     setImportMsg('')
     const reader = new FileReader()
     reader.onload = () => {
-      const parsed = rowsToClients(parseCsv(String(reader.result ?? '')))
+      const parsed = mapRows<ParsedClient>(parseCsv(String(reader.result ?? '')), ALIASES, POSITIONAL, 'name')
       if (!parsed.length) { setImportMsg('No client rows found — make sure the file has a column with client/company names.'); setPreview(null) }
       else setPreview(parsed)
     }
