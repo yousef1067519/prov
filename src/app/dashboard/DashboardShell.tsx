@@ -17,7 +17,7 @@ import {
 // Invoices & Payments · Compliance · Reports · Team & Roles · Settings.
 // Legacy NavKeys are kept so existing pages keep highlighting correctly.
 export type NavKey =
-  | 'dashboard' | 'search' | 'discovery' | 'sponsors' | 'templates' | 'send' | 'track'
+  | 'dashboard' | 'search' | 'discovery' | 'sponsors' | 'clients' | 'templates' | 'send' | 'track'
   | 'contracts' | 'crm' | 'invoices' | 'performance' | 'workflows' | 'analytics' | 'reports'
   | 'portal' | 'team' | 'integrations' | 'branding' | 'settings' | 'compliance'
 
@@ -53,7 +53,7 @@ const NAV_GROUPS: NavGroup[] = [
     heading: 'Workspace',
     items: [
       { key: 'team', label: 'Team & Roles', href: '/dashboard/team', Icon: Users },
-      { key: 'sponsors', label: 'Clients & Brands', href: '/dashboard/campaign?step=1', Icon: Building2 },
+      { key: 'clients', label: 'Clients', href: '/dashboard/clients', Icon: Building2 },
       { key: 'integrations', label: 'Integrations', href: '/dashboard/integrations', Icon: Webhook },
       { key: 'branding', label: 'Branding', href: '/dashboard/settings', Icon: Briefcase },
       { key: 'settings', label: 'Settings', href: '/dashboard/settings', Icon: Settings },
