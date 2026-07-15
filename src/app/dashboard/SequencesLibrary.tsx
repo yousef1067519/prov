@@ -97,6 +97,23 @@ function SequenceCard({ seq, stats, canManage, canApprove, onSaved, onDeleted }:
     setSteps(prev => prev.map((s, j) => j === i ? { ...s, ...patch } : s))
   }
 
+  // AI-personalize one step: sends the user's draft to /api/emails/polish and swaps
+  // the editor contents with the improved version. Nothing is saved until Save.
+  const [aiBusy, setAiBusy] = useState<number | null>(null)
+  async function aiImprove(i: number) {
+    setAiBusy(i); setErr('')
+    try {
+      const res = await fetch('/api/emails/polish', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ subject: steps[i].subject, body: steps[i].body }),
+      })
+      const d = await res.json()
+      if (!res.ok) { setErr(d.error ?? 'AI improve failed — try again.'); return }
+      setStep(i, { subject: d.subject, body: d.body })
+    } catch { setErr('Network error — try again') }
+    finally { setAiBusy(null) }
+  }
+
   return (
     <div className="card-dark" style={{ padding: 0, marginBottom: 12, overflow: 'hidden' }}>
       {/* header row */}
@@ -134,6 +151,14 @@ function SequenceCard({ seq, stats, canManage, canApprove, onSaved, onDeleted }:
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10, flexWrap: 'wrap' }}>
                 <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#FFD700' }}>{stepLabel(i, st.days_after_previous)}</span>
                 <span style={{ flex: 1 }} />
+                {canManage && (
+                  <button onClick={() => aiImprove(i)} disabled={aiBusy !== null || !st.body.trim()}
+                    title="AI keeps your voice and [Variables], tightens the hook and CTA"
+                    style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: 'rgba(255,215,0,0.08)', border: '1px solid rgba(255,215,0,0.3)', color: '#FFD700', borderRadius: 7, padding: '5px 11px', fontSize: '0.75rem', fontWeight: 700, cursor: 'pointer', opacity: st.body.trim() ? 1 : 0.4 }}>
+                    {aiBusy === i ? <Loader2 size={12} className="animate-spin" /> : <Sparkles size={12} />}
+                    {aiBusy === i ? 'Improving…' : 'AI improve'}
+                  </button>
+                )}
                 {i > 0 && canManage && (
                   <label style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: '0.75rem', color: '#666' }}>
                     Days after previous
