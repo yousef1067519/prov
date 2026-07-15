@@ -50,10 +50,9 @@ export default async function DashboardPage() {
     .eq('id', user.id)
     .single()
 
-  // No active plan → send them to pricing to subscribe (self-serve) rather than the
-  // confusing demo bounce. They can still request a demo from there.
+  // No active plan → the plan chooser (they stay signed in; subscribing unlocks the app).
   const accessType = profile?.access_type ?? 'none'
-  if (!['lifetime', 'standard', 'vip'].includes(accessType)) redirect('/?plan=required#pricing')
+  if (!['lifetime', 'standard', 'vip'].includes(accessType)) redirect('/plans')
 
   return <DashboardHome email={user.email ?? ''} accessType={accessType} daysLeft={null} />
 }

@@ -26,7 +26,7 @@ export default async function CampaignPage() {
   // ENTERPRISE (§8.1): admin-provisioned access only — no trial gating.
   const { data: profile } = await supabase.from('profiles').select('access_type').eq('id', user.id).single()
   const accessType = profile?.access_type ?? 'none'
-  if (!['lifetime', 'standard', 'vip'].includes(accessType)) redirect('/?plan=required#pricing')
+  if (!['lifetime', 'standard', 'vip'].includes(accessType)) redirect('/plans')
 
   return <DashboardClient email={user.email ?? ''} accessType={accessType} daysLeft={null} />
 }
