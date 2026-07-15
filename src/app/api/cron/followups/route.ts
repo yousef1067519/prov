@@ -6,9 +6,10 @@ import { sendEmail } from '@/lib/resend'
 import { unsubscribeFooter } from '@/lib/unsubscribe'
 import { randomUUID } from 'crypto'
 
-// Follow-up dispatcher. Hit hourly by Vercel Cron (vercel.json). For each due
-// scheduled email: skip if the recipient replied or unsubscribed, otherwise
-// send from the owner's Gmail (server-side refresh token) or Resend fallback.
+// Follow-up dispatcher. Hit once daily by Vercel Cron (vercel.json) — Vercel's free
+// Hobby tier caps crons at once/day; bump back to hourly ("0 * * * *") once on Pro.
+// For each due scheduled email: skip if the recipient replied or unsubscribed,
+// otherwise send from the owner's Gmail (server-side refresh token) or Resend fallback.
 export async function GET(req: NextRequest) {
   // Auth: Vercel Cron sends `Authorization: Bearer ${CRON_SECRET}` when the env
   // var is set. Also accept x-cron-secret for manual/local triggering.

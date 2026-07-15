@@ -2,9 +2,11 @@ import { NextRequest, NextResponse } from 'next/server'
 import { serviceClient } from '@/lib/apiUser'
 import { syncRepliesForOwner } from '@/lib/replySync'
 
-// Reply Radar dispatcher. Hit by Vercel Cron (vercel.json). For each user with
-// a stored Gmail refresh token: scan their inbox for replies to tracked sends,
-// record them in `responses`, and mark sends replied (auto-cancels follow-ups).
+// Reply Radar dispatcher. Hit once daily by Vercel Cron (vercel.json) — Vercel's free
+// Hobby tier caps crons at once/day; bump back to every 30min ("30 * * * *") once on
+// Pro. For each user with a stored Gmail refresh token: scan their inbox for replies
+// to tracked sends, record them in `responses`, and mark sends replied (auto-cancels
+// follow-ups).
 export async function GET(req: NextRequest) {
   const secret = process.env.CRON_SECRET
   const auth = req.headers.get('authorization') ?? ''
