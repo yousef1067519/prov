@@ -83,7 +83,7 @@ export default function LoginPage() {
           ) : step === 'email' ? (
             <>
               <h1 style={{ fontSize: '1.75rem', fontWeight: 800, color: '#f5f5f5', marginBottom: 8 }}>Sign in</h1>
-              <p style={{ color: '#888', marginBottom: 32 }}>We&apos;ll email you a 6-digit code.</p>
+              <p style={{ color: '#888', marginBottom: 32 }}>We&apos;ll email you an 8-digit code.</p>
               <form onSubmit={sendCode} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
                 <input type="email" className="input-dark" placeholder="your@agency.com" value={email} onChange={e => setEmail(e.target.value)} required />
                 <button type="submit" disabled={loading} className="btn-gold py-4">
@@ -99,7 +99,7 @@ export default function LoginPage() {
             <>
               <h1 style={{ fontSize: '1.75rem', fontWeight: 800, color: '#f5f5f5', marginBottom: 8 }}>Enter your code</h1>
               <p style={{ color: '#888', marginBottom: 32 }}>
-                We sent a 6-digit code to <strong style={{ color: '#f5f5f5' }}>{email}</strong>. Enter it below.
+                We sent an 8-digit code to <strong style={{ color: '#f5f5f5' }}>{email}</strong>. Enter it below.
               </p>
               {devCode && (
                 <div style={{ background: 'rgba(255,215,0,0.08)', border: '1px solid rgba(255,215,0,0.3)', borderRadius: 8, padding: '10px 14px', marginBottom: 16, fontSize: 13, color: '#FFD700' }}>
@@ -107,7 +107,7 @@ export default function LoginPage() {
                 </div>
               )}
               <form onSubmit={verifyCode} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-                <input inputMode="numeric" autoComplete="one-time-code" className="input-dark" placeholder="123456" value={code}
+                <input inputMode="numeric" autoComplete="one-time-code" className="input-dark" placeholder="12345678" value={code}
                   onChange={e => setCode(e.target.value)} required
                   style={{ textAlign: 'center', fontSize: '1.25rem', letterSpacing: '0.3em', fontFamily: 'monospace' }} />
                 <button type="submit" disabled={loading} className="btn-gold py-4">

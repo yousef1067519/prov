@@ -6,7 +6,7 @@ export type SendCodeResult =
   | { ok: false; error: string }
 
 /**
- * Generate a 6-digit sign-in code via Supabase admin (no email is sent by Supabase) and
+ * Generate an 8-digit sign-in code via Supabase admin (no email is sent by Supabase) and
  * deliver it through Resend. Bypasses Supabase's rate-limited built-in email and the
  * magic-link redirect loop entirely — a pure code flow used by /login and trial signup.
  */
