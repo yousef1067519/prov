@@ -61,7 +61,14 @@ function PlanCard({ name, price, tagline, rows, cta, href, highlighted, note }: 
   )
 }
 
-export default function PlansPage() {
+const CHECKOUT_ERRORS: Record<string, string> = {
+  unavailable: 'Checkout is not configured yet — the plan price is missing on the server. If you run Prov, set STRIPE_GROWTH_PRICE_ID in the deployment environment.',
+  checkout: 'We couldn’t start checkout just now. Try again in a minute, or request a demo and we’ll set you up directly.',
+}
+
+export default async function PlansPage({ searchParams }: { searchParams: Promise<{ e?: string }> }) {
+  const { e } = await searchParams
+  const checkoutError = e ? CHECKOUT_ERRORS[e] : null
   return (
     <div style={{ minHeight: '100vh', background: '#0a0a0a', padding: '60px 24px 100px' }}>
       <div style={{ maxWidth: 900, margin: '0 auto' }}>
@@ -70,6 +77,11 @@ export default function PlansPage() {
             Pr<span style={{ color: '#FFD700' }}>o</span>v
           </Link>
         </div>
+        {checkoutError && (
+          <div style={{ maxWidth: 640, margin: '0 auto 26px', background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.25)', borderRadius: 10, padding: '12px 16px', color: '#f8b4b4', fontSize: '0.875rem', textAlign: 'center' }}>
+            {checkoutError}
+          </div>
+        )}
         <h1 style={{ textAlign: 'center', color: '#fff', fontWeight: 900, fontSize: 'clamp(1.6rem, 4vw, 2.4rem)', letterSpacing: '-0.02em', marginBottom: 10 }}>
           Choose your plan
         </h1>

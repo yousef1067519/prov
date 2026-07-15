@@ -19,7 +19,7 @@ export async function GET(req: NextRequest) {
   }
 
   if (!price) {
-    return NextResponse.redirect(new URL('/demo?e=plan-unavailable', origin))
+    return NextResponse.redirect(new URL('/plans?e=unavailable', origin))
   }
 
   try {
@@ -34,10 +34,10 @@ export async function GET(req: NextRequest) {
       success_url: `${origin}/api/stripe/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/#pricing`,
     })
-    if (!session.url) return NextResponse.redirect(new URL('/demo?e=checkout', origin))
+    if (!session.url) return NextResponse.redirect(new URL('/plans?e=checkout', origin))
     return NextResponse.redirect(session.url, { status: 303 })
   } catch (e) {
     console.error('checkout create failed:', (e as Error).message)
-    return NextResponse.redirect(new URL('/demo?e=checkout', origin))
+    return NextResponse.redirect(new URL('/plans?e=checkout', origin))
   }
 }
