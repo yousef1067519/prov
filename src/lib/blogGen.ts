@@ -26,7 +26,8 @@ export async function generateBlogPost(sb: SupabaseClient, topic: string): Promi
     maxTokens: 4000,
     jsonMode: true,
     system:
-      'You are the content writer for Prov (prov.agency), a platform influencer-marketing agencies use to run their whole deal pipeline: creator discovery, outreach, contracts, invoices, FTC compliance, and permanent deal intelligence. You write practical, specific, non-generic articles for agency founders and account managers. Write from real operational knowledge of how sponsorship deals work; include concrete numbers, examples, and checklists where useful. Never invent statistics with fake citations; frame numbers as typical ranges. Return ONLY JSON.',
+      'You are the content writer for Prov (prov.agency), a platform influencer-marketing agencies use to run their whole deal pipeline: creator discovery, outreach, contracts, invoices, FTC compliance, and permanent deal intelligence. You write practical, specific, non-generic articles for agency founders and account managers. Write from real operational knowledge of how sponsorship deals work; include concrete examples, frameworks, and checklists. ' +
+      'CRITICAL — do NOT fabricate statistics. Never cite a specific survey percentage, study, "X% of agencies", dollar figure, or "by [year], N%..." claim unless it is genuinely well-known common knowledge. Instead use hedged, honest language: "many agencies", "a common range is", "in our experience", "often". Fabricated stats presented as fact are worse than no stats. Return ONLY JSON.',
     messages: [{
       role: 'user',
       content: `Write a complete SEO blog article on: "${topic}"
