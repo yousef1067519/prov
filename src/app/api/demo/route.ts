@@ -2,18 +2,6 @@ import { NextRequest, NextResponse } from 'next/server'
 import { serviceClient } from '@/lib/apiUser'
 import { sendEmail } from '@/lib/resend'
 
-const NEED_LABEL: Record<string, string> = {
-  discovery: 'Finding & vetting creators',
-  outreach: "Outreach that doesn't rely on one person's inbox",
-  pipeline: 'Keeping deals organized',
-  contracts: 'Contracts & getting agreements signed faster',
-  invoicing: 'Invoicing & getting paid on time',
-  compliance: 'FTC disclosure & compliance risk',
-  memory: 'Not losing deal history when someone leaves',
-  reporting: 'Client-ready reporting',
-  other: 'Something else',
-}
-
 // Sales-led inbound (§8.1): stores the application and notifies the team.
 // No account is created here — enterprise accounts are provisioned by ops.
 export async function POST(req: NextRequest) {
@@ -30,7 +18,7 @@ export async function POST(req: NextRequest) {
     team_size: b.team_size ? String(b.team_size).slice(0, 40) : null,
     clients_count: b.clients_count ? String(b.clients_count).slice(0, 40) : null,
     monthly_deals: b.monthly_deals ? String(b.monthly_deals).slice(0, 40) : null,
-    priority_need: b.priority_need ? String(b.priority_need).slice(0, 40) : null,
+    priority_need: b.priority_need ? String(b.priority_need).trim().slice(0, 200) : null,
     message: b.message ? String(b.message).slice(0, 2000) : null,
   })
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
@@ -40,7 +28,7 @@ export async function POST(req: NextRequest) {
   // failure (e.g. sender domain not verified in Resend) is visible in server
   // logs instead of silently vanishing.
   try {
-    const need = b.priority_need ? NEED_LABEL[String(b.priority_need)] ?? String(b.priority_need) : null
+    const need = b.priority_need ? String(b.priority_need).trim().slice(0, 200) : null
     await sendEmail({
       to: process.env.SUPPORT_INBOX ?? 'providemediabrands@gmail.com',
       subject: `Demo request: ${agency_name}${need ? ` — needs: ${need}` : ''}`,

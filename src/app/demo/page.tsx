@@ -79,18 +79,8 @@ export default function DemoPage() {
               <label style={{ display: 'block', color: '#888', fontSize: '0.8125rem', marginBottom: 8 }}>
                 What do you need most right now?
               </label>
-              <select className="input-dark" style={inputStyle} value={form.priority_need} onChange={set('priority_need')}>
-                <option value="">Select what matters most (optional)</option>
-                <option value="discovery">Finding &amp; vetting creators</option>
-                <option value="outreach">Outreach that doesn&apos;t rely on one person&apos;s inbox</option>
-                <option value="pipeline">Keeping deals organized (not losing track in a CRM/sheet)</option>
-                <option value="contracts">Contracts &amp; getting agreements signed faster</option>
-                <option value="invoicing">Invoicing &amp; getting paid on time</option>
-                <option value="compliance">FTC disclosure &amp; compliance risk</option>
-                <option value="memory">Not losing deal history when someone leaves</option>
-                <option value="reporting">Client-ready reporting</option>
-                <option value="other">Something else</option>
-              </select>
+              <input className="input-dark" style={inputStyle} placeholder="e.g. keeping our deals organized without losing track"
+                value={form.priority_need} onChange={set('priority_need')} maxLength={200} />
               <textarea className="input-dark" rows={4} style={inputStyle} placeholder="What does your current workflow look like? (spreadsheets, inboxes, tools…)" value={form.message} onChange={set('message')} />
               <button type="submit" className="btn-gold" disabled={state === 'sending'} style={{ width: '100%' }}>
                 {state === 'sending' ? 'Sending…' : 'Request a demo'}

@@ -5,18 +5,6 @@ import { Search, Loader2, RefreshCw, Building2, Mail } from 'lucide-react'
 
 type Status = 'new' | 'contacted' | 'qualified' | 'won' | 'lost'
 
-const NEED_LABEL: Record<string, string> = {
-  discovery: 'Finding & vetting creators',
-  outreach: "Outreach that doesn't rely on one person's inbox",
-  pipeline: 'Keeping deals organized',
-  contracts: 'Contracts & getting agreements signed faster',
-  invoicing: 'Invoicing & getting paid on time',
-  compliance: 'FTC disclosure & compliance risk',
-  memory: 'Not losing deal history when someone leaves',
-  reporting: 'Client-ready reporting',
-  other: 'Something else',
-}
-
 interface DemoRequest {
   id: string; agency_name: string; contact_name: string; email: string
   team_size: string | null; clients_count: string | null; monthly_deals: string | null
@@ -118,8 +106,8 @@ export default function AdminDemos() {
               <span style={{ fontSize: '0.86rem', fontWeight: 600, color: '#e8e8ee' }}>{r.agency_name}</span>
               <span style={{ display: 'block', fontSize: '0.76rem', color: '#888' }}>{r.contact_name} · {r.email}</span>
               {r.priority_need && (
-                <span style={{ display: 'inline-block', marginTop: 4 }}>
-                  <Badge bg="rgba(255,215,0,.12)" fg="#FFD700">{NEED_LABEL[r.priority_need] ?? r.priority_need}</Badge>
+                <span style={{ display: 'block', marginTop: 4, fontSize: '0.76rem', color: '#FFD700', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  &ldquo;{r.priority_need}&rdquo;
                 </span>
               )}
             </span>
@@ -157,8 +145,8 @@ export default function AdminDemos() {
               {selected.priority_need && (
                 <>
                   <label style={labelStyle}>What they need most</label>
-                  <div style={{ marginBottom: 18 }}>
-                    <Badge bg="rgba(255,215,0,.12)" fg="#FFD700">{NEED_LABEL[selected.priority_need] ?? selected.priority_need}</Badge>
+                  <div style={{ background: '#121219', border: '1px solid #20202a', borderRadius: 10, padding: '10px 14px', fontSize: '0.86rem', color: '#FFD700', marginBottom: 18 }}>
+                    {selected.priority_need}
                   </div>
                 </>
               )}
