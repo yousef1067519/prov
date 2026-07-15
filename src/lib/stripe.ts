@@ -15,16 +15,19 @@ export const stripe = new Proxy({} as Stripe, {
 })
 
 export const LIFETIME_PRICE_ID = process.env.STRIPE_LIFETIME_PRICE_ID!
+export const GROWTH_PRICE_ID = process.env.STRIPE_GROWTH_PRICE_ID
 
-// Tier price IDs. Standard $99/mo (1,500 sends/wk) · VIP $299/mo (unlimited).
-// Until the Standard price exists in Stripe, both fall back to the original
-// price so checkout never breaks.
-export const PLAN_PRICES: Record<'standard' | 'vip', string | undefined> = {
+// Self-serve plans buyable from the pricing page.
+// 'growth' = $2,000/mo Growth Agency (the main tier). Legacy standard/vip kept for
+// existing subscribers.
+export const PLAN_PRICES: Record<'growth' | 'standard' | 'vip', string | undefined> = {
+  growth: process.env.STRIPE_GROWTH_PRICE_ID,
   standard: process.env.STRIPE_STANDARD_PRICE_ID,
   vip: process.env.STRIPE_VIP_PRICE_ID ?? process.env.STRIPE_LIFETIME_PRICE_ID,
 }
 
-/** Map a Stripe price id back to a plan tier (for webhook sync). */
+/** Map a Stripe price id back to a plan tier (for webhook sync). All paid plans grant
+ *  full dashboard access ('vip'); 'standard' is the only distinct legacy tier. */
 export function planForPrice(priceId: string | null | undefined): 'standard' | 'vip' {
   if (priceId && priceId === process.env.STRIPE_STANDARD_PRICE_ID) return 'standard'
   return 'vip'

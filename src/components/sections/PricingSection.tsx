@@ -49,8 +49,10 @@ export default function PricingSection() {
             tier={TIERS.growth.name}
             price={TIERS.growth.price}
             bestFor={TIERS.growth.bestFor}
-            CTA="Request a demo"
-            ctaHref="/demo"
+            CTA="Subscribe"
+            ctaHref="/api/stripe/checkout?plan=growth"
+            secondaryCTA="or request a demo first →"
+            secondaryHref="/demo"
             benefits={[
               { text: 'Up to 10 client workspaces & 15 seats', checked: true },
               { text: 'Institutional memory (deal intelligence)', checked: true },
@@ -79,7 +81,7 @@ export default function PricingSection() {
         </div>
 
         <p style={{ textAlign: 'center', color: '#444', fontSize: '0.875rem', marginTop: 24 }}>
-          Sales-led onboarding: demo → pilot on your real workflow → contract. No setup fees.
+          Subscribe and start today, or book a demo on your real workflow first. Cancel anytime. No setup fees.
         </p>
       </div>
     </section>

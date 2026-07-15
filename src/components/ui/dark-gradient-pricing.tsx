@@ -29,11 +29,13 @@ export interface PricingCardProps {
   bestFor: string
   CTA: string
   ctaHref?: string
+  secondaryCTA?: string
+  secondaryHref?: string
   highlighted?: boolean
   benefits: BenefitProps[]
 }
 
-export function PricingCard({ tier, price, bestFor, CTA, ctaHref = '#', highlighted, benefits }: PricingCardProps) {
+export function PricingCard({ tier, price, bestFor, CTA, ctaHref = '#', secondaryCTA, secondaryHref, highlighted, benefits }: PricingCardProps) {
   return (
     <motion.div
       initial={{ filter: 'blur(2px)', opacity: 0.6 }}
@@ -62,9 +64,14 @@ export function PricingCard({ tier, price, bestFor, CTA, ctaHref = '#', highligh
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14, padding: '32px 0' }}>
           {benefits.map((b, i) => <Benefit key={i} {...b} />)}
         </div>
-        <Link href={ctaHref} className={highlighted ? 'btn-gold' : 'btn-outline-gold'} style={{ width: '100%', display: 'flex', padding: '12px' }}>
+        <Link href={ctaHref} className={highlighted ? 'btn-gold' : 'btn-outline-gold'} style={{ width: '100%', display: 'flex', justifyContent: 'center', padding: '12px' }}>
           {CTA}
         </Link>
+        {secondaryCTA && secondaryHref && (
+          <Link href={secondaryHref} style={{ display: 'block', textAlign: 'center', marginTop: 12, color: '#888', fontSize: '0.8125rem', textDecoration: 'none' }}>
+            {secondaryCTA}
+          </Link>
+        )}
       </div>
     </motion.div>
   )

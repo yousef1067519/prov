@@ -54,9 +54,11 @@ export async function proxy(request: NextRequest) {
       } catch { /* 0020 not applied yet — fall through to /demo */ }
     }
     if (!hasAccess) {
+      // No plan yet → pricing (self-serve subscribe), not the demo dead-end.
       const url = request.nextUrl.clone()
-      url.pathname = '/demo'
-      url.search = ''
+      url.pathname = '/'
+      url.search = '?plan=required'
+      url.hash = 'pricing'
       return NextResponse.redirect(url)
     }
   }

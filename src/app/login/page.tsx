@@ -50,10 +50,19 @@ export default function LoginPage() {
       const retry = await supabase.auth.verifyOtp({ email, token: code.trim(), type: alt })
       err = retry.error
     }
-    setLoading(false)
-    if (err) { setError('That code is invalid or expired. Try again.'); return }
-    router.push('/dashboard')
-    router.refresh()
+    if (err) { setLoading(false); setError('That code is invalid or expired. Try again.'); return }
+    // Honor ?redirect= (e.g. returning to checkout, or a protected page the proxy sent
+    // them from). Only allow same-origin relative paths — never an open redirect.
+    let dest = '/dashboard'
+    try {
+      const r = new URLSearchParams(window.location.search).get('redirect')
+      if (r && r.startsWith('/') && !r.startsWith('//')) dest = r
+    } catch { /* default */ }
+    // Full-page navigation (not router.push): the just-set Supabase auth cookie needs to
+    // reach the server, or the destination renders before the session exists and bounces
+    // back to /login — the "have to press verify twice" bug. A hard load guarantees the
+    // server sees the session on the first try. Keep the button spinning through it.
+    window.location.assign(dest)
   }
 
   return (

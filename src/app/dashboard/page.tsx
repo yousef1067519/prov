@@ -50,9 +50,10 @@ export default async function DashboardPage() {
     .eq('id', user.id)
     .single()
 
-  // ENTERPRISE (§8.1): admin-provisioned access only — no trial gating.
+  // No active plan → send them to pricing to subscribe (self-serve) rather than the
+  // confusing demo bounce. They can still request a demo from there.
   const accessType = profile?.access_type ?? 'none'
-  if (!['lifetime', 'standard', 'vip'].includes(accessType)) redirect('/demo')
+  if (!['lifetime', 'standard', 'vip'].includes(accessType)) redirect('/?plan=required#pricing')
 
   return <DashboardHome email={user.email ?? ''} accessType={accessType} daysLeft={null} />
 }
