@@ -12,7 +12,7 @@ export async function GET(req: NextRequest) {
 
   let query = serviceClient()
     .from('demo_requests')
-    .select('id, agency_name, contact_name, email, team_size, clients_count, monthly_deals, message, status, created_at')
+    .select('id, agency_name, contact_name, email, team_size, clients_count, monthly_deals, priority_need, message, status, created_at')
     .order('created_at', { ascending: false })
 
   if (status) query = query.eq('status', status)
