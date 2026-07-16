@@ -5,10 +5,18 @@ import { logActivity } from '@/lib/activity'
 type Ctx = { params: Promise<{ id: string }> }
 const ROLES = new Set(['Admin', 'Manager', 'Team Member'])
 
+// Managing the roster (role changes, removals) is owner/admin only. A member's
+// apiCtx resolves to the owner key, so this gate is what actually stops a regular
+// member from editing other members.
+function isManager(c: { role: string; wsRole: string | null }): boolean {
+  return ['Owner', 'Admin'].includes(c.role) || ['owner', 'admin'].includes(c.wsRole ?? '')
+}
+
 // PATCH — change a member's role (and/or activate a pending member).
 export async function PATCH(req: NextRequest, ctx: Ctx) {
   const c = await apiCtx()
   if (!c) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (!isManager(c)) return NextResponse.json({ error: 'Only a manager can change roles' }, { status: 403 })
   const { id } = await ctx.params
   const body = await req.json().catch(() => ({}))
 
@@ -36,6 +44,7 @@ export async function PATCH(req: NextRequest, ctx: Ctx) {
 export async function DELETE(_req: NextRequest, ctx: Ctx) {
   const c = await apiCtx()
   if (!c) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (!isManager(c)) return NextResponse.json({ error: 'Only a manager can remove members' }, { status: 403 })
   const { id } = await ctx.params
 
   const { data } = await c.sb.from('team_members').select('member_email').eq('id', id).eq('owner_id', c.userId).maybeSingle()

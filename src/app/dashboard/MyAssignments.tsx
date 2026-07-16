@@ -5,20 +5,35 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { ClipboardList, Check, ChevronRight, Loader2 } from 'lucide-react'
+import { ClipboardList, Check, ChevronRight, Loader2, Bell } from 'lucide-react'
 import type { Task } from './TeamAssignments'
 
-export default function MyAssignments() {
+const SEEN_KEY = 'prov_seen_tasks'
+
+export default function MyAssignments({ email }: { email?: string }) {
   const [tasks, setTasks] = useState<Task[]>([])
   const [loaded, setLoaded] = useState(false)
   const [busy, setBusy] = useState<string | null>(null)
+  const [newCount, setNewCount] = useState(0)
 
   useEffect(() => {
     fetch('/api/tasks?mine=1')
       .then(r => r.json())
-      .then(d => { setTasks((d.tasks ?? []).filter((t: Task) => t.status !== 'done')); setLoaded(true) })
+      .then(d => {
+        const open = (d.tasks ?? []).filter((t: Task) => t.status !== 'done')
+        setTasks(open); setLoaded(true)
+        // Flag assignments this member hasn't seen before (per-account localStorage).
+        try {
+          const key = `${SEEN_KEY}:${(email || d.me || 'anon').toLowerCase()}`
+          const seen = new Set<string>(JSON.parse(localStorage.getItem(key) || '[]'))
+          const fresh = open.filter((t: Task) => !seen.has(t.id))
+          setNewCount(fresh.length)
+          // Mark everything currently open as seen so the badge clears next visit.
+          localStorage.setItem(key, JSON.stringify(open.map((t: Task) => t.id)))
+        } catch { /* no-op */ }
+      })
       .catch(() => setLoaded(true))
-  }, [])
+  }, [email])
 
   async function markDone(t: Task) {
     setBusy(t.id)
@@ -35,7 +50,12 @@ export default function MyAssignments() {
   if (!loaded || tasks.length === 0) return null // nothing assigned — stay out of the way
 
   return (
-    <div className="card-dark" style={{ padding: 20, marginBottom: 24 }}>
+    <div className="card-dark" style={{ padding: 20, marginBottom: 24, border: newCount > 0 ? '1px solid rgba(255,215,0,0.4)' : undefined }}>
+      {newCount > 0 && (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'rgba(255,215,0,0.1)', border: '1px solid rgba(255,215,0,0.3)', borderRadius: 8, padding: '9px 13px', marginBottom: 14, color: '#FFD700', fontSize: '0.85rem', fontWeight: 600 }}>
+          <Bell size={15} /> You have {newCount} new assignment{newCount === 1 ? '' : 's'} from your manager
+        </div>
+      )}
       <div style={{ display: 'flex', alignItems: 'center', gap: 9, marginBottom: 12 }}>
         <ClipboardList size={16} style={{ color: '#FFD700' }} />
         <span style={{ color: '#f0f0f0', fontWeight: 700, fontSize: '0.9375rem' }}>My assignments</span>

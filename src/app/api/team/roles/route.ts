@@ -7,6 +7,14 @@ import { audit } from '@/lib/tenant'
 const ADMIN_ROLES = ['owner', 'admin']
 const VALID_ROLES = ['owner', 'admin', 'account_manager', 'analyst', 'client_viewer']
 
+// Fail CLOSED: only owner/admin may change roles or grants. Covers both the
+// enterprise role (wsRole) and the legacy-bridge role, and never passes when a
+// role can't be determined.
+function canAdmin(ctx: { role: string; wsRole: string | null }): boolean {
+  if (ctx.wsRole) return ADMIN_ROLES.includes(ctx.wsRole)
+  return ['Owner', 'Admin'].includes(ctx.role)
+}
+
 export async function GET() {
   const ctx = await apiCtx()
   if (!ctx?.workspaceId) return NextResponse.json({ members: [], clients: [] })
@@ -31,7 +39,7 @@ export async function GET() {
 export async function PUT(req: NextRequest) {
   const ctx = await apiCtx()
   if (!ctx?.workspaceId) return NextResponse.json({ error: 'No workspace' }, { status: 401 })
-  if (ctx.wsRole && !ADMIN_ROLES.includes(ctx.wsRole)) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  if (!canAdmin(ctx)) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   const b = await req.json().catch(() => ({}))
   if (!b.member_id || !VALID_ROLES.includes(b.role)) {
     return NextResponse.json({ error: 'member_id and a valid role are required' }, { status: 400 })
@@ -60,7 +68,7 @@ export async function PUT(req: NextRequest) {
 export async function POST(req: NextRequest) {
   const ctx = await apiCtx()
   if (!ctx?.workspaceId) return NextResponse.json({ error: 'No workspace' }, { status: 401 })
-  if (ctx.wsRole && !ADMIN_ROLES.includes(ctx.wsRole)) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  if (!canAdmin(ctx)) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   const b = await req.json().catch(() => ({}))
   if (!b.member_id || !b.client_id) return NextResponse.json({ error: 'member_id and client_id required' }, { status: 400 })
 

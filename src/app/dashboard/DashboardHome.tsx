@@ -100,7 +100,7 @@ export default function DashboardHome({ email, accessType, daysLeft }: { email: 
         <SetupChecklist />
 
         {/* Tasks assigned to the signed-in member (hidden when empty) */}
-        <MyAssignments />
+        <MyAssignments email={email} />
 
         {/* First-win tracker — perceived progress toward the activation milestone */}
         <FirstWinTracker />

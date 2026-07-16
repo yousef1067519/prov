@@ -42,12 +42,13 @@ export default function TeamPanel() {
   const [wsMembers, setWsMembers] = useState<WsMember[]>([])
   const [wsClients, setWsClients] = useState<WsClient[]>([])
   const [myWsRole, setMyWsRole] = useState<string | null>(null)
+  const [canManage, setCanManage] = useState(false)
 
   const load = useCallback(async () => {
     try {
       const [m, a] = await Promise.all([fetch('/api/team/members'), fetch('/api/team/activity')])
       const md = await m.json(); const ad = await a.json()
-      setMembers(md.members ?? []); setActivity(ad.activity ?? [])
+      setMembers(md.members ?? []); setActivity(ad.activity ?? []); setCanManage(!!md.canManage)
     } catch {}
     try {
       const d = await (await fetch('/api/team/roles')).json()
@@ -87,7 +88,8 @@ export default function TeamPanel() {
         </div>
         <p style={{ color: '#666', marginTop: 4, marginBottom: 24 }}>Invite teammates, set their roles, and track activity across your workspace.</p>
 
-        {/* Invite */}
+        {/* Invite — managers only */}
+        {canManage && (
         <div style={{ background: '#111', border: '1px solid #1a1a1a', borderRadius: 14, padding: '18px 20px', marginBottom: 22 }}>
           <h2 style={{ color: '#e8e8e8', fontWeight: 700, fontSize: '0.95rem', marginBottom: 12, display: 'flex', alignItems: 'center', gap: 8 }}><UserPlus size={16} style={{ color: '#FFD700' }} /> Invite a member</h2>
           <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
@@ -102,6 +104,7 @@ export default function TeamPanel() {
           <p style={{ color: '#666', fontSize: '0.75rem', marginTop: 8 }}>{ROLE_DESC[role]}</p>
           {error && <p style={{ color: '#f87171', fontSize: '0.8125rem', marginTop: 8 }}>{error}</p>}
         </div>
+        )}
 
         {/* Members */}
         <h2 style={{ color: '#e8e8e8', fontWeight: 700, fontSize: '0.95rem', marginBottom: 12 }}>Members</h2>
@@ -118,10 +121,16 @@ export default function TeamPanel() {
                 </div>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <select value={m.role} onChange={e => changeRole(m.id, e.target.value as Role)} style={{ ...input, padding: '6px 9px' }}>
-                  {ROLES.map(r => <option key={r} value={r}>{r}</option>)}
-                </select>
-                <button onClick={() => remove(m.id)} title="Remove" style={{ display: 'flex', padding: '7px 9px', borderRadius: 8, background: 'rgba(255,92,92,.08)', border: '1px solid rgba(255,92,92,.25)', color: '#ff7a7a', cursor: 'pointer' }}><Trash2 size={14} /></button>
+                {canManage ? (
+                  <>
+                    <select value={m.role} onChange={e => changeRole(m.id, e.target.value as Role)} style={{ ...input, padding: '6px 9px' }}>
+                      {ROLES.map(r => <option key={r} value={r}>{r}</option>)}
+                    </select>
+                    <button onClick={() => remove(m.id)} title="Remove" style={{ display: 'flex', padding: '7px 9px', borderRadius: 8, background: 'rgba(255,92,92,.08)', border: '1px solid rgba(255,92,92,.25)', color: '#ff7a7a', cursor: 'pointer' }}><Trash2 size={14} /></button>
+                  </>
+                ) : (
+                  <span style={{ color: '#888', fontSize: '0.8rem', border: '1px solid #222', borderRadius: 7, padding: '5px 11px' }}>{m.role}</span>
+                )}
               </div>
             </div>
           ))}
@@ -138,7 +147,7 @@ export default function TeamPanel() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 30 }}>
               {wsMembers.map(m => {
                 const label = m.invited_email ?? m.user_id ?? 'member'
-                const canEdit = !myWsRole || ['owner', 'admin'].includes(myWsRole)
+                const canEdit = canManage // server-verified owner/admin; fails closed otherwise
                 return (
                   <div key={m.id} style={{ background: '#0e0e0e', border: '1px solid #1a1a1a', borderRadius: 10, padding: '12px 16px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>

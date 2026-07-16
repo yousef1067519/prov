@@ -7,23 +7,32 @@ import { sendEmail } from '@/lib/resend'
 
 const ROLES = new Set(['Admin', 'Manager', 'Team Member'])
 
-// GET — list the owner's team members (excluding removed).
+// Only the agency owner/admin manages the team (invite, change roles, remove).
+// A member's apiCtx resolves to the owner's key, so without this gate any member
+// could mutate the roster — check it explicitly on every mutating endpoint.
+function isManager(ctx: { role: string; wsRole: string | null }): boolean {
+  return ['Owner', 'Admin'].includes(ctx.role) || ['owner', 'admin'].includes(ctx.wsRole ?? '')
+}
+
+// GET — list the owner's team members (excluding removed). `canManage` tells the UI
+// whether to show the invite/role/remove controls.
 export async function GET() {
   const ctx = await apiCtx()
-  if (!ctx) return NextResponse.json({ members: [] })
+  if (!ctx) return NextResponse.json({ members: [], canManage: false })
   const { data } = await ctx.sb
     .from('team_members')
     .select('id, member_email, role, status, created_at')
     .eq('owner_id', ctx.userId)
     .neq('status', 'removed')
     .order('created_at', { ascending: true })
-  return NextResponse.json({ members: data ?? [] })
+  return NextResponse.json({ members: data ?? [], canManage: isManager(ctx) })
 }
 
 // POST — invite a member (creates a pending row + sends an invite email).
 export async function POST(req: NextRequest) {
   const ctx = await apiCtx()
   if (!ctx) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (!isManager(ctx)) return NextResponse.json({ error: 'Only a manager can invite team members' }, { status: 403 })
 
   const body = await req.json().catch(() => ({}))
   const email = String(body.email ?? '').trim().toLowerCase()
