@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { randomBytes } from 'crypto'
 import { apiCtx } from '@/lib/apiUser'
 import { logActivity } from '@/lib/activity'
 import { dispatchEvent } from '@/lib/notify'
@@ -36,8 +37,13 @@ export async function POST(req: NextRequest) {
     .select('id').eq('owner_id', ctx.userId).eq('member_email', email).neq('status', 'removed').maybeSingle()
   if (existing) return NextResponse.json({ error: 'That person is already on your team' }, { status: 409 })
 
+  // Personal one-time invite code: the member redeems it at /join, which links
+  // their account to this workspace — no payment, and their signup email doesn't
+  // even have to match. Cleared on redemption (single-use).
+  const inviteCode = randomBytes(5).toString('hex').toUpperCase() // 10 chars, e.g. 3F8A2C9D1B
+
   const { data, error } = await ctx.sb.from('team_members')
-    .insert({ owner_id: ctx.userId, member_email: email, role, status: 'pending' })
+    .insert({ owner_id: ctx.userId, member_email: email, role, status: 'pending', invite_code: inviteCode })
     .select('id, member_email, role, status, created_at').single()
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
 
@@ -49,7 +55,11 @@ export async function POST(req: NextRequest) {
     await sendEmail({
       to: email,
       subject: 'You’ve been invited to a Prov workspace',
-      body: `You've been invited to join a Prov workspace as a ${role}.\n\nSign in (or sign up) with this email address at ${appUrl}/login to accept.`,
+      body:
+        `You've been invited to join a Prov workspace as a ${role}.\n\n` +
+        `Your personal invite code (one-time use):\n\n    ${inviteCode}\n\n` +
+        `Join here: ${appUrl}/join?code=${inviteCode}\n\n` +
+        `Or go to ${appUrl}/join and enter the code. You'll create your account (or sign in) and land straight in the workspace — no payment needed.`,
     })
   } catch (e) { console.error('invite email failed:', (e as Error).message) }
 

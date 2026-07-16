@@ -126,6 +126,10 @@ export default function LoginPage() {
                 New to Prov?{' '}
                 <Link href="/signup" style={{ color: '#FFD700', textDecoration: 'underline' }}>Create an account</Link>
               </p>
+              <p style={{ textAlign: 'center', color: '#555', fontSize: '0.85rem', marginTop: 8 }}>
+                Have a team invite code?{' '}
+                <Link href="/join" style={{ color: '#888', textDecoration: 'underline' }}>Join your team</Link>
+              </p>
             </>
           ) : mode === 'code-request' ? (
             <>
