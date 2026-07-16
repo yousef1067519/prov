@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { useWhiteLabel } from '@/lib/whitelabel'
 import ProvBot from './ProvBot'
+import FeatureRequest from './FeatureRequest'
 import {
   LayoutDashboard, Search, Building2, Mail, Send, Inbox, FileText,
   Users, Receipt, BarChart3, Briefcase, Settings, LogOut, Menu, X, Command, CornerDownLeft,
@@ -300,8 +301,9 @@ export default function DashboardShell({ active, email, accessType, daysLeft, ch
           ))}
         </nav>
 
-        <div style={{ padding: '14px 16px', borderTop: '1px solid #1a1a22' }}>
-          <button onClick={signOut} style={{ display: 'flex', alignItems: 'center', gap: 10, width: '100%', background: 'none', border: 'none', color: '#777', cursor: 'pointer', fontSize: '0.875rem', padding: '8px 8px' }}>
+        <div style={{ padding: '10px 12px 14px', borderTop: '1px solid #1a1a22' }}>
+          <FeatureRequest />
+          <button onClick={signOut} style={{ display: 'flex', alignItems: 'center', gap: 10, width: '100%', background: 'none', border: 'none', color: '#777', cursor: 'pointer', fontSize: '0.875rem', padding: '9px 13px' }}>
             <LogOut size={16} /> Log out
           </button>
         </div>

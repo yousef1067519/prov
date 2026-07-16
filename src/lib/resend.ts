@@ -14,6 +14,9 @@ export async function sendEmail(opts: {
   subject: string
   body: string
   from?: string
+  /** Where a reply should go — e.g. the customer who sent a feature request.
+   *  Keeps `from` on the verified domain (required) while Reply reaches them. */
+  replyTo?: string
 }) {
   const resend = getResend()
   const { data, error } = await resend.emails.send({
@@ -24,6 +27,7 @@ export async function sendEmail(opts: {
     to: opts.to,
     subject: opts.subject,
     text: opts.body,
+    ...(opts.replyTo ? { replyTo: opts.replyTo } : {}),
   })
   if (error) throw new Error(error.message)
   return data
