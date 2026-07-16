@@ -53,6 +53,33 @@ export async function proxy(request: NextRequest) {
         hasAccess = Boolean(membership)
       } catch { /* 0020 not applied yet — fall through to /demo */ }
     }
+    if (!hasAccess && user.email && process.env.SUPABASE_SERVICE_ROLE_KEY) {
+      // Invited team members ride the workspace's plan — they never pay. A fresh
+      // signup's invite is still unlinked (team_members.member_user_id is null), and
+      // legacy RLS is owner-only, so link + check it here with the service role
+      // BEFORE deciding they have no access. Runs only on the no-access path.
+      try {
+        const { createClient } = await import('@supabase/supabase-js')
+        const svc = createClient(
+          process.env.NEXT_PUBLIC_SUPABASE_URL ?? 'https://placeholder.supabase.co',
+          process.env.SUPABASE_SERVICE_ROLE_KEY,
+          { auth: { persistSession: false } },
+        )
+        // Claim any pending invites for this email…
+        const { data: linked } = await svc.from('team_members')
+          .update({ member_user_id: user.id, status: 'active' })
+          .ilike('member_email', user.email)
+          .is('member_user_id', null)
+          .select('id')
+        // …or find an already-linked active membership.
+        if (linked?.length) hasAccess = true
+        else {
+          const { data: existing } = await svc.from('team_members')
+            .select('id').eq('member_user_id', user.id).eq('status', 'active').limit(1).maybeSingle()
+          hasAccess = Boolean(existing)
+        }
+      } catch { /* stay no-access */ }
+    }
     if (!hasAccess) {
       // No plan yet → the plan chooser (they stay signed in; subscribing unlocks the app).
       const url = request.nextUrl.clone()
