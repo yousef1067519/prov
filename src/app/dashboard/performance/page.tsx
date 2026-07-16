@@ -12,6 +12,7 @@ import {
 import { Search, Plus, Sparkles, Copy, FileDown, Share2, Trophy, ExternalLink } from 'lucide-react'
 import PerformanceTrackerModal from '@/components/ui/performance-tracker-modal'
 import DashboardShell from '../DashboardShell'
+import AskYourData from '../AskYourData'
 import { WorkflowRunner, catalogFor, type Workflow } from './WorkflowsTab'
 
 /* ── types ── */
@@ -246,6 +247,9 @@ export default function PerformancePage() {
             <Plus size={16} /> Log campaign
           </button>
         </div>
+
+        {/* Ask-your-data: natural-language queries over this workspace's history */}
+        <AskYourData />
 
         {/* Agency-wide KPIs */}
         {analytics && analytics.total_records > 0 && (

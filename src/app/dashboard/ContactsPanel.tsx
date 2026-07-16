@@ -8,7 +8,7 @@
 import { useEffect, useRef, useState } from 'react'
 import DashboardShell from './DashboardShell'
 import { parseCsv, mapRows } from '@/lib/csv'
-import { Users, Plus, Trash2, Upload, Loader2, X, Check, AtSign } from 'lucide-react'
+import { Users, Plus, Trash2, Upload, Loader2, X, Check, AtSign, Link2 } from 'lucide-react'
 
 interface Contact {
   id: string
@@ -48,6 +48,8 @@ export default function ContactsPanel() {
   const [importing, setImporting] = useState(false)
   const [preview, setPreview] = useState<ParsedContact[] | null>(null)
   const [importMsg, setImportMsg] = useState('')
+  const [profileUrl, setProfileUrl] = useState('')
+  const [urlBusy, setUrlBusy] = useState(false)
   const fileRef = useRef<HTMLInputElement>(null)
 
   async function load() {
@@ -77,6 +79,24 @@ export default function ContactsPanel() {
     if (!window.confirm(`Remove "${c.name}" from your contacts?`)) return
     setContacts(prev => prev.filter(x => x.id !== c.id))
     await fetch(`/api/contacts?id=${c.id}`, { method: 'DELETE' }).catch(() => {})
+  }
+
+  async function addFromUrl(e: React.FormEvent) {
+    e.preventDefault()
+    if (!profileUrl.trim() || urlBusy) return
+    setUrlBusy(true); setImportMsg('')
+    try {
+      const res = await fetch('/api/contacts/from-url', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url: profileUrl.trim() }),
+      })
+      const d = await res.json()
+      if (!res.ok) { setImportMsg(d.error ?? 'Could not add from that URL.'); setUrlBusy(false); return }
+      setImportMsg(`Added ${d.contact.name} (@${d.contact.handle} · ${d.contact.platform}${d.contact.niche ? ' · ' + d.contact.niche : ''}).`)
+      setProfileUrl('')
+      await load()
+    } catch { setImportMsg('Network error — try again.') }
+    setUrlBusy(false)
   }
 
   function onFile(e: React.ChangeEvent<HTMLInputElement>) {
@@ -129,6 +149,20 @@ export default function ContactsPanel() {
             </button>
           </div>
         </div>
+
+        {/* Quick-add from a profile URL */}
+        <form onSubmit={addFromUrl} style={{ display: 'flex', gap: 10, marginTop: 14 }}>
+          <div style={{ position: 'relative', flex: 1 }}>
+            <Link2 size={14} style={{ position: 'absolute', left: 12, top: 12, color: '#555' }} />
+            <input className="input-dark" style={{ width: '100%', paddingLeft: 34 }} value={profileUrl}
+              onChange={e => setProfileUrl(e.target.value)}
+              placeholder="Paste a profile URL — instagram.com/creator, tiktok.com/@creator, youtube.com/@creator…" />
+          </div>
+          <button type="submit" disabled={urlBusy || !profileUrl.trim()}
+            style={{ display: 'inline-flex', alignItems: 'center', gap: 7, background: '#161616', border: '1px solid #2a2a2a', color: '#e5e5e5', borderRadius: 8, padding: '9px 15px', fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer', opacity: profileUrl.trim() ? 1 : 0.5 }}>
+            {urlBusy ? <Loader2 size={14} className="animate-spin" /> : <Plus size={14} />} Quick add
+          </button>
+        </form>
 
         {importMsg && <div style={{ background: 'rgba(0,208,132,0.08)', border: '1px solid rgba(0,208,132,0.3)', color: '#4ade80', borderRadius: 8, padding: '10px 14px', fontSize: '0.85rem', margin: '14px 0' }}>{importMsg}</div>}
 

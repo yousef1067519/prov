@@ -44,6 +44,20 @@ function fmtMoney(cents: number, currency: string) {
   return currency && currency !== 'USD' ? `${s} ${currency}` : `$${s}`
 }
 
+// Deal health: how long a deal has sat in its current stage. Contract runs a
+// tighter clock — an unsigned contract goes cold faster than early-stage chat.
+function dealHealth(d: Deal): { color: string; label: string } | null {
+  if (!ACTIVE_STAGES.includes(d.stage)) return null
+  const since = d.stage_changed_at ? Date.parse(d.stage_changed_at) : NaN
+  if (!Number.isFinite(since)) return null
+  const days = Math.floor((Date.now() - since) / 864e5)
+  const stageLabel = STAGE_LABEL[d.stage as BoardStage] ?? d.stage
+  const [warn, bad] = d.stage === 'contract' ? [2, 4] : [4, 8]
+  if (days >= bad) return { color: '#ef4444', label: `${days} days in ${stageLabel} — needs attention` }
+  if (days >= warn) return { color: '#facc15', label: `${days} days in ${stageLabel} — going quiet` }
+  return { color: '#22c55e', label: days === 0 ? 'Moved today' : `${days}d in ${stageLabel} — healthy` }
+}
+
 export default function CrmBoard({ email }: { email: string }) {
   const [deals, setDeals] = useState<Deal[]>([])
   const [clients, setClients] = useState<Client[]>([])
@@ -189,10 +203,16 @@ export default function CrmBoard({ email }: { email: string }) {
                     {items.map(d => {
                       const idx = BOARD_STAGES.indexOf(stage)
                       const doublePitch = !!d.creator_id && (activeByCreator[d.creator_id] ?? 0) >= 2 && ACTIVE_STAGES.includes(d.stage)
+                      const health = dealHealth(d)
                       return (
                         <div key={d.id} style={{ background: '#111', border: '1px solid #1c1c1c', borderRadius: 12, padding: 14, borderLeft: `3px solid ${STAGE_COLOR[stage]}` }}>
                           <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8, marginBottom: 6 }}>
-                            <span style={{ color: '#f0f0f0', fontWeight: 700, fontSize: '0.9375rem' }}>{d.name}</span>
+                            <span style={{ color: '#f0f0f0', fontWeight: 700, fontSize: '0.9375rem', display: 'inline-flex', alignItems: 'center', gap: 7 }}>
+                              {health && (
+                                <span title={health.label} style={{ width: 8, height: 8, borderRadius: '50%', background: health.color, flexShrink: 0, boxShadow: `0 0 6px ${health.color}66`, cursor: 'default' }} />
+                              )}
+                              {d.name}
+                            </span>
                             <span style={{ color: '#FFD700', fontWeight: 800, fontSize: '0.875rem', fontFamily: 'var(--font-display)', whiteSpace: 'nowrap' }}>{fmtMoney(d.value_cents, d.currency)}</span>
                           </div>
                           {d.clients && (
