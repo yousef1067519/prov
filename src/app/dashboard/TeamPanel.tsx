@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { Users, UserPlus, Loader2, Trash2, Activity, Clock, ShieldCheck } from 'lucide-react'
 import DashboardShell from './DashboardShell'
+import TeamAssignments from './TeamAssignments'
 
 type Role = 'Admin' | 'Manager' | 'Team Member'
 interface Member { id: string; member_email: string; role: Role; status: 'pending' | 'active' | 'removed'; created_at: string }
@@ -178,6 +179,9 @@ export default function TeamPanel() {
         )}
 
         {/* Activity */}
+        {/* Assignments: manager assigns work, members see it on their dashboard */}
+        <TeamAssignments memberEmails={members.filter(m => m.status !== 'removed').map(m => m.member_email)} />
+
         <h2 style={{ color: '#e8e8e8', fontWeight: 700, fontSize: '0.95rem', marginBottom: 12, display: 'flex', alignItems: 'center', gap: 8 }}><Activity size={16} style={{ color: '#FFD700' }} /> Activity</h2>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
           {activity.length === 0 && <p style={{ color: '#555', fontSize: '0.875rem', padding: '16px 0', textAlign: 'center' }}>No activity yet.</p>}

@@ -7,6 +7,8 @@ import { Plus, FolderKanban, Mail, FileText, BarChart3, Briefcase, ChevronRight,
 import { useRouter } from 'next/navigation'
 import DashboardShell from './DashboardShell'
 import FirstWinTracker from './FirstWinTracker'
+import SetupChecklist from './SetupChecklist'
+import MyAssignments from './MyAssignments'
 import { getLocalCampaigns, mergeCampaigns } from '@/lib/localCampaigns'
 import { isOnboarded, markOnboarded } from '@/lib/onboarding'
 
@@ -93,7 +95,12 @@ export default function DashboardHome({ email, accessType, daysLeft }: { email: 
         <h1 style={{ fontSize: '1.75rem', fontWeight: 900, color: '#f5f5f5', fontFamily: 'var(--font-display)', letterSpacing: '-0.02em' }}>Dashboard</h1>
         <p style={{ color: '#666', marginTop: 4, marginBottom: 24 }}>Welcome back. Pick what you want to do, or check where your campaigns stand.</p>
 
-        {/* Milestone-based trial status — only while on trial */}
+        {/* Setup checklist — walks a new workspace through branding, Google,
+            clients, contacts, team, and sequences before real work starts */}
+        <SetupChecklist />
+
+        {/* Tasks assigned to the signed-in member (hidden when empty) */}
+        <MyAssignments />
 
         {/* First-win tracker — perceived progress toward the activation milestone */}
         <FirstWinTracker />
