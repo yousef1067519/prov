@@ -43,3 +43,6 @@ scripts/leads_agencies.csv
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# demo-deck screenshot assets (not product source)
+deck-assets/
