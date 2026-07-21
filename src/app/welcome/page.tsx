@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect } from 'react'
+import { Suspense, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { firePurchase } from '@/components/MetaPixel'
 
@@ -9,7 +9,7 @@ import { firePurchase } from '@/components/MetaPixel'
 // which a browser pixel can't observe). Fires once, then forwards to the app.
 const PLAN_VALUE: Record<string, number> = { starter: 75, solo: 300, growth: 2000 }
 
-export default function WelcomePage() {
+function WelcomeInner() {
   const router = useRouter()
   const params = useSearchParams()
 
@@ -31,5 +31,14 @@ export default function WelcomePage() {
         <p style={{ color: '#888' }}>One moment — taking you to your dashboard.</p>
       </div>
     </div>
+  )
+}
+
+// useSearchParams must sit inside a Suspense boundary for static prerendering.
+export default function WelcomePage() {
+  return (
+    <Suspense fallback={<div style={{ minHeight: '100vh', background: '#0a0a0a' }} />}>
+      <WelcomeInner />
+    </Suspense>
   )
 }
