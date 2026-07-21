@@ -1,4 +1,5 @@
 import LandingNav from '@/components/landing/LandingNav'
+import AgencyIntro from '@/components/AgencyIntro'
 import { SplineScene } from '@/components/ui/spline'
 import AgentGraph from '@/components/landing/AgentGraph'
 import FeatureRows from '@/components/landing/FeatureRows'
@@ -53,6 +54,7 @@ const FAQS: Array<{ q: string; a: string }> = [
 export default function HomePage() {
   return (
     <>
+      <AgencyIntro />
       <LandingNav />
       <main style={{ background: 'var(--lp-bg)' }}>
         {/* ── Hero ── */}

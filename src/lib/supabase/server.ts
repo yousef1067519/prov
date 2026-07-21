@@ -7,6 +7,8 @@ export async function createClient() {
     process.env.NEXT_PUBLIC_SUPABASE_URL ?? 'https://placeholder.supabase.co',
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? 'placeholder-key',
     {
+      // ~1 year so refreshed session cookies stay persistent across browser closes.
+      cookieOptions: { maxAge: 60 * 60 * 24 * 365 },
       cookies: {
         getAll() { return cookieStore.getAll() },
         setAll(cookiesToSet) {

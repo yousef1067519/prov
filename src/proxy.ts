@@ -10,6 +10,8 @@ export async function proxy(request: NextRequest) {
     process.env.NEXT_PUBLIC_SUPABASE_URL ?? 'https://placeholder.supabase.co',
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? 'placeholder-key',
     {
+      // ~1 year so refreshed session cookies persist across browser closes.
+      cookieOptions: { maxAge: 60 * 60 * 24 * 365 },
       cookies: {
         getAll() { return request.cookies.getAll() },
         setAll(cookiesToSet) {
