@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { Inter, Space_Grotesk, Geist, JetBrains_Mono } from 'next/font/google'
 import './globals.css'
+import MetaPixel from '@/components/MetaPixel'
 
 // Body: Inter. Display: Space Grotesk. Hero: Geist. Mono: JetBrains Mono
 // (terminal/pipeline labels on the marketing site).
@@ -34,6 +35,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" className={`${inter.variable} ${spaceGrotesk.variable} ${geist.variable} ${jetbrains.variable}`}>
       <body style={{ background: '#0a0a0a', color: '#f5f5f5' }}>
+        <MetaPixel />
         {children}
       </body>
     </html>

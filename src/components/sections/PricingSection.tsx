@@ -9,10 +9,20 @@ import { PricingCard } from '@/components/ui/dark-gradient-pricing'
 // process. The transparent-pricing promise stays: the price you sign is the
 // price you keep.
 const TIERS = {
+  starter: {
+    name: 'Starter',
+    price: '$75/mo',
+    bestFor: 'Testing the waters — 300 outreach credits a day',
+  },
+  premium: {
+    name: 'Premium',
+    price: '$300/mo',
+    bestFor: 'Independent influencer marketers — 1,500 credits a day',
+  },
   growth: {
     name: 'Growth Agency',
     price: '$2,000/mo',
-    bestFor: 'Agencies running up to 10 client brands',
+    bestFor: 'Agencies running up to 10 client brands — uncapped',
   },
   enterprise: {
     name: 'Enterprise',
@@ -44,13 +54,42 @@ export default function PricingSection() {
           </p>
         </motion.div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 18, alignItems: 'stretch', maxWidth: 860, margin: '0 auto' }}>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4" style={{ gap: 18, alignItems: 'stretch', maxWidth: 1200, margin: '0 auto' }}>
+          <PricingCard
+            tier={TIERS.starter.name}
+            price={TIERS.starter.price}
+            bestFor={TIERS.starter.bestFor}
+            CTA="Start free trial"
+            ctaHref="/signup"
+            benefits={[
+              { text: '300 outreach credits / day (resets daily)', checked: true },
+              { text: '1 seat · your own book of deals', checked: true },
+              { text: 'Contracts & invoicing included', checked: true },
+              { text: 'Client workspaces', checked: false },
+              { text: 'Team seats & approval flows', checked: false },
+            ]}
+          />
+          <PricingCard
+            tier={TIERS.premium.name}
+            price={TIERS.premium.price}
+            bestFor={TIERS.premium.bestFor}
+            CTA="Start free trial"
+            ctaHref="/signup"
+            benefits={[
+              { text: '1,500 outreach credits / day (resets daily)', checked: true },
+              { text: '1 seat · up to 3 client workspaces', checked: true },
+              { text: 'Pipeline CRM + outreach from your Gmail', checked: true },
+              { text: 'Contracts, invoicing & FTC compliance', checked: true },
+              { text: 'Institutional memory (deal intelligence)', checked: true },
+            ]}
+          />
           <PricingCard
             tier={TIERS.growth.name}
             price={TIERS.growth.price}
             bestFor={TIERS.growth.bestFor}
             CTA="Subscribe"
             ctaHref="/api/stripe/checkout?plan=growth"
+            highlighted
             secondaryCTA="or request a demo first →"
             secondaryHref="/demo"
             benefits={[
@@ -68,7 +107,6 @@ export default function PricingSection() {
             bestFor={TIERS.enterprise.bestFor}
             CTA="Talk to us"
             ctaHref="/demo"
-            highlighted
             benefits={[
               { text: 'Unlimited clients & seats', checked: true },
               { text: 'Everything in Growth Agency', checked: true },
@@ -81,7 +119,7 @@ export default function PricingSection() {
         </div>
 
         <p style={{ textAlign: 'center', color: '#444', fontSize: '0.875rem', marginTop: 24 }}>
-          Subscribe and start today, or book a demo on your real workflow first. Cancel anytime. No setup fees.
+          Every account starts with 25 free outreach credits — no card required. Cancel anytime. No setup fees.
         </p>
       </div>
     </section>

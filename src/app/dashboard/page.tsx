@@ -54,5 +54,15 @@ export default async function DashboardPage() {
   const accessType = profile?.access_type ?? 'none'
   if (!['lifetime', 'standard', 'vip'].includes(accessType)) redirect('/plans')
 
+  // First-run vertical gate: send users who haven't chosen their agency type to
+  // the picker. Defensive — if agency_type_set doesn't exist yet (pre-migration),
+  // the select errors and `av` is null, so we simply don't gate.
+  const { data: av } = await supabase
+    .from('profiles')
+    .select('agency_type, agency_type_set')
+    .eq('id', user.id)
+    .maybeSingle()
+  if (av && av.agency_type_set === false) redirect('/choose-agency')
+
   return <DashboardHome email={user.email ?? ''} accessType={accessType} daysLeft={null} />
 }

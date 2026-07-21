@@ -34,6 +34,16 @@ export async function POST(req: NextRequest) {
   if (!ctx) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   if (!isManager(ctx)) return NextResponse.json({ error: 'Only a manager can invite team members' }, { status: 403 })
 
+  // Trial/Starter/Premium are single-seat: no team invites. (Growth/Enterprise/legacy pass.)
+  const { data: ownerProfile } = await ctx.sb.from('profiles')
+    .select('access_type').eq('id', ctx.userId).maybeSingle()
+  if (['trial', 'starter', 'solo'].includes(ownerProfile?.access_type ?? '')) {
+    return NextResponse.json(
+      { error: 'Your plan is single-seat. Upgrade to Growth Agency to invite your team.' },
+      { status: 403 },
+    )
+  }
+
   const body = await req.json().catch(() => ({}))
   const email = String(body.email ?? '').trim().toLowerCase()
   const role = ROLES.has(body.role) ? body.role : 'Team Member'

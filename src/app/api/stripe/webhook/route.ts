@@ -12,7 +12,7 @@ function adminClient() {
   )
 }
 
-async function setAccess(userId: string | null, email: string | null, accessType: 'standard' | 'vip' | 'lifetime' | 'none') {
+async function setAccess(userId: string | null, email: string | null, accessType: 'starter' | 'solo' | 'standard' | 'vip' | 'lifetime' | 'none') {
   const supabase = adminClient()
   if (userId) {
     await supabase.from('profiles').upsert({ id: userId, access_type: accessType })
@@ -45,7 +45,10 @@ export async function POST(req: NextRequest) {
       const session = event.data.object as Stripe.Checkout.Session
       if (session.mode !== 'subscription') break
       // Tier comes from checkout metadata; legacy sessions without it → vip.
-      const plan = session.metadata?.plan === 'standard' ? 'standard' : 'vip'
+      const metaPlan = session.metadata?.plan
+      const plan = metaPlan === 'starter' ? 'starter'
+        : metaPlan === 'solo' ? 'solo'
+        : metaPlan === 'standard' ? 'standard' : 'vip'
       await setAccess(session.metadata?.user_id ?? null, session.customer_email, plan)
       break
     }

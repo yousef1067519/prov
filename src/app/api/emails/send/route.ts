@@ -3,6 +3,7 @@ import { sendEmail } from '@/lib/resend'
 import { getGoogleAccess, sendGmail } from '@/lib/google'
 import { apiCtx, serviceClient } from '@/lib/apiUser'
 import { unsubscribeFooter } from '@/lib/unsubscribe'
+import { creditStatus } from '@/lib/credits'
 
 import { randomUUID } from 'crypto'
 
@@ -47,24 +48,42 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  // ENTERPRISE (§8.1): plan-based credit gating removed. What remains is a flat
-  // deliverability throttle — batching protects the sender's domain reputation,
-  // it is not a monetization lever. 500 sends per rolling 4h per workspace.
+  // Two layers of send gating:
+  //  1. PLAN CREDITS (trial/starter/premium only) — the monetization lever.
+  //     Growth/Enterprise/legacy tiers are uncapped here.
+  //  2. Flat deliverability throttle (everyone) — 500 per rolling 4h protects
+  //     the sender's domain reputation; not a monetization lever.
   const THROTTLE_PER_WINDOW = 500
   const WINDOW_HOURS = 4
   let creditsLeft = Infinity
   if (ownerId) {
+    const { data: profile } = await sb.from('profiles')
+      .select('access_type').eq('id', ownerId).maybeSingle()
+    const credits = await creditStatus(sb, ownerId, profile?.access_type)
+    if (credits.cap !== null && credits.left <= 0) {
+      const isTrial = credits.window === 'lifetime'
+      return NextResponse.json({
+        error: 'credits',
+        message: isTrial
+          ? 'Your free trial credits are used up — pick a plan to keep sending. Everything you built is saved.'
+          : `You've used all ${credits.cap} sends on the ${credits.planLabel} plan this month. Upgrade for more, or credits refill as sends age past 30 days.`,
+        plan: credits.planLabel,
+        upgradeUrl: '/plans',
+      }, { status: 402 })
+    }
+
     const since = new Date(Date.now() - WINDOW_HOURS * 3600_000).toISOString()
     const { count } = await sb.from('emails_sent')
       .select('*', { count: 'exact', head: true })
       .eq('user_id', ownerId).gte('created_at', since)
-    creditsLeft = Math.max(0, THROTTLE_PER_WINDOW - (count ?? 0))
-    if (creditsLeft <= 0) {
+    const throttleLeft = Math.max(0, THROTTLE_PER_WINDOW - (count ?? 0))
+    if (throttleLeft <= 0) {
       return NextResponse.json({
         error: 'throttle',
         message: `Send window full (${THROTTLE_PER_WINDOW} per ${WINDOW_HOURS} hours — this protects your domain reputation). It refills as earlier sends age out.`,
       }, { status: 429 })
     }
+    creditsLeft = Math.min(throttleLeft, credits.left)
   }
 
   // CAN-SPAM: never send to recipients who have opted out of this workspace.

@@ -7,6 +7,21 @@ export const metadata: Metadata = { title: 'Choose your plan — Prov' }
 // Plan chooser. Signed-in users without an active plan land here (from the
 // dashboard/proxy gates) instead of being bounced to the marketing page.
 
+const STARTER = [
+  ['300 outreach credits / day', 'Resets every day — one credit = one personalized email sent. Follow-ups and replies don’t cost extra.'],
+  ['1 seat · your own book of deals', 'Pipeline CRM, contacts, and outreach from your Gmail.'],
+  ['Contracts & invoices included', 'The same deal paperwork engine the agencies get.'],
+  ['Institutional memory', 'Every deal you close becomes searchable intelligence you own.'],
+] as const
+
+const PREMIUM = [
+  ['1,500 outreach credits / day', 'Resets every day — enough to run outreach like a full-time job. One credit = one personalized email.'],
+  ['1 seat · up to 3 client workspaces', 'Everything you need to run your own book of creator deals — just you.'],
+  ['Creator discovery + contact imports', 'Search the vetted catalog or bring your own spreadsheet rolodex.'],
+  ['Pipeline CRM & outreach from your Gmail', 'Deals move sourced → outreach → negotiating → live, with automatic follow-ups.'],
+  ['Contracts, invoices & FTC compliance', 'The same deal paperwork engine the agencies get.'],
+] as const
+
 const GROWTH = [
   ['Up to 10 client workspaces & 15 team seats', 'Run every brand you manage in one place, with per-client scoping.'],
   ['Creator discovery + your own contact imports', 'Search our vetted catalog with quality scores, or bring your own spreadsheet rolodex.'],
@@ -62,7 +77,7 @@ function PlanCard({ name, price, tagline, rows, cta, href, highlighted, note }: 
 }
 
 const CHECKOUT_ERRORS: Record<string, string> = {
-  unavailable: 'Checkout is not configured yet — the plan price is missing on the server. If you run Prov, set STRIPE_GROWTH_PRICE_ID in the deployment environment.',
+  unavailable: 'Checkout is not configured yet — that plan’s price is missing on the server. If you run Prov, set STRIPE_GROWTH_PRICE_ID / STRIPE_SOLO_PRICE_ID in the deployment environment.',
   checkout: 'We couldn’t start checkout just now. Try again in a minute, or request a demo and we’ll set you up directly.',
 }
 
@@ -71,7 +86,7 @@ export default async function PlansPage({ searchParams }: { searchParams: Promis
   const checkoutError = e ? CHECKOUT_ERRORS[e] : null
   return (
     <div style={{ minHeight: '100vh', background: '#0a0a0a', padding: '60px 24px 100px' }}>
-      <div style={{ maxWidth: 900, margin: '0 auto' }}>
+      <div style={{ maxWidth: 1140, margin: '0 auto' }}>
         <div style={{ textAlign: 'center', marginBottom: 14 }}>
           <Link href="/" style={{ fontSize: '1.4rem', fontWeight: 900, color: '#f5f5f5', textDecoration: 'none' }}>
             Pr<span style={{ color: '#FFD700' }}>o</span>v
@@ -86,11 +101,29 @@ export default async function PlansPage({ searchParams }: { searchParams: Promis
           Choose your plan
         </h1>
         <p style={{ textAlign: 'center', color: '#888', maxWidth: 560, margin: '0 auto 44px', lineHeight: 1.65 }}>
-          Your account is ready — pick how you want to run Prov. The price you sign is the
-          price you keep: it never increases on you. Cancel anytime.
+          Every new account starts with 25 free outreach credits — no card required.
+          The price you sign is the price you keep: it never increases on you. Cancel anytime.
         </p>
 
         <div style={{ display: 'flex', gap: 18, flexWrap: 'wrap', alignItems: 'stretch' }}>
+          <PlanCard
+            name="Starter"
+            price="$75/mo"
+            tagline="Testing the waters — run real outreach without the full commitment."
+            rows={STARTER}
+            cta="Subscribe & start now"
+            href="/api/stripe/checkout?plan=starter"
+            note="Secure checkout via Stripe · cancel anytime"
+          />
+          <PlanCard
+            name="Premium"
+            price="$300/mo"
+            tagline="For independent influencer marketers running their own client deals."
+            rows={PREMIUM}
+            cta="Subscribe & start now"
+            href="/api/stripe/checkout?plan=solo"
+            note="Secure checkout via Stripe · cancel anytime · upgrade when you hire"
+          />
           <PlanCard
             name="Growth Agency"
             price="$2,000/mo"

@@ -42,7 +42,9 @@ export async function proxy(request: NextRequest) {
   // (team members carry no access_type of their own). No trial/paywall gating.
   if (isProtected && user) {
     const { data: profile } = await supabase.from('profiles').select('access_type').eq('id', user.id).single()
-    const provisioned = ['lifetime', 'standard', 'vip'].includes(profile?.access_type ?? 'none')
+    // trial/starter/solo are the self-serve credit tiers; trial expiry is enforced
+    // at the send route (credits), not here — the dashboard stays accessible.
+    const provisioned = ['lifetime', 'standard', 'vip', 'solo', 'starter', 'trial'].includes(profile?.access_type ?? 'none')
     let hasAccess = provisioned
     if (!hasAccess) {
       // workspace_members read is allowed to the member themselves via the
