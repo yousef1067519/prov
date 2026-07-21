@@ -28,7 +28,7 @@ export async function POST(req: NextRequest) {
     .update({ used_by: user.id, used_at: new Date().toISOString() })
     .eq('code', code)
     .is('used_by', null)
-    .select('plan, days')
+    .select('plan, days, agency_type')
     .maybeSingle()
 
   if (error || !claimed) {
@@ -36,10 +36,11 @@ export async function POST(req: NextRequest) {
   }
 
   const compUntil = new Date(Date.now() + claimed.days * 864e5).toISOString()
-  const { error: upErr } = await svc
-    .from('profiles')
-    .update({ access_type: claimed.plan, comp_until: compUntil })
-    .eq('id', user.id)
+  // A code pinned to a vertical (e.g. an IMA code) sets the redeemer up on that
+  // system directly and marks the choice made, so they skip the agency picker.
+  const update: Record<string, unknown> = { access_type: claimed.plan, comp_until: compUntil }
+  if (claimed.agency_type) { update.agency_type = claimed.agency_type; update.agency_type_set = true }
+  const { error: upErr } = await svc.from('profiles').update(update).eq('id', user.id)
   if (upErr) return NextResponse.json({ error: 'Could not apply the code — try again.' }, { status: 500 })
 
   return NextResponse.json({ ok: true, days: claimed.days })
