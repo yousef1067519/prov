@@ -1,5 +1,5 @@
 import LandingNav from '@/components/landing/LandingNav'
-import PipelinePanel from '@/components/landing/PipelinePanel'
+import { SplineScene } from '@/components/ui/spline'
 import AgentGraph from '@/components/landing/AgentGraph'
 import FeatureRows from '@/components/landing/FeatureRows'
 import { SectionLabel, HeroInput, StatCard, FAQItem, CtaBand } from '@/components/landing/LandingBits'
@@ -72,7 +72,13 @@ export default function HomePage() {
               </p>
               <HeroInput />
             </div>
-            <PipelinePanel />
+            {/* Interactive 3D robot — replaces the pipeline panel as the hero visual */}
+            <div style={{ position: 'relative', height: 520, width: '100%' }} className="lp-hero-robot">
+              <SplineScene
+                scene="https://prod.spline.design/kZDDjO5HuC9GJUM2/scene.splinecode"
+                className="h-full w-full"
+              />
+            </div>
           </div>
           <style>{`
             @media (max-width: 960px) { .lp-hero-grid { grid-template-columns: 1fr !important; gap: 40px !important; } }
