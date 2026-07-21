@@ -40,7 +40,12 @@ const FEATURES: Array<{ key: string; title: string; body: string; Icon: React.Co
   },
 ]
 
-export default function FeatureRows() {
+// `items` overrides the card text per vertical (icons assigned in order); the
+// default five cards are the generic IMA-flavored set.
+export default function FeatureRows({ items }: { items?: Array<{ title: string; body: string }> } = {}) {
+  const cards = items
+    ? items.map((it, i) => ({ key: `v.${i}`, title: it.title, body: it.body, Icon: FEATURES[i % FEATURES.length].Icon }))
+    : FEATURES
   return (
     <section id="features" style={{ padding: '90px 24px', borderTop: '1px solid var(--lp-hairline)' }}>
       <div style={{ maxWidth: 1080, margin: '0 auto' }}>
@@ -50,7 +55,7 @@ export default function FeatureRows() {
         </h2>
 
         <div className="lp-feature-grid">
-          {FEATURES.map(({ key, title, body, Icon }) => (
+          {cards.map(({ key, title, body, Icon }) => (
             <div key={key} className="lp-feature-card">
               <div className="lp-feature-icon">
                 <Icon size={20} strokeWidth={1.75} />
