@@ -14,15 +14,16 @@ function adminClient() {
 
 async function setAccess(userId: string | null, email: string | null, accessType: 'starter' | 'solo' | 'standard' | 'vip' | 'lifetime' | 'none') {
   const supabase = adminClient()
+  // A real Stripe subscription state supersedes any comp grant, so clear comp_until.
   if (userId) {
-    await supabase.from('profiles').upsert({ id: userId, access_type: accessType })
+    await supabase.from('profiles').upsert({ id: userId, access_type: accessType, comp_until: null })
     return
   }
   if (email) {
     const { data: { users } } = await supabase.auth.admin.listUsers()
     const found = users.find(u => u.email === email)
     if (found) {
-      await supabase.from('profiles').upsert({ id: found.id, access_type: accessType })
+      await supabase.from('profiles').upsert({ id: found.id, access_type: accessType, comp_until: null })
     }
   }
 }

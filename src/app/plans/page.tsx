@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { Check } from 'lucide-react'
+import RedeemCode from './RedeemCode'
 
 export const metadata: Metadata = { title: 'Choose your plan — Prov' }
 
@@ -145,7 +146,9 @@ export default async function PlansPage({ searchParams }: { searchParams: Promis
           />
         </div>
 
-        <p style={{ textAlign: 'center', color: '#555', fontSize: '0.85rem', marginTop: 34 }}>
+        <RedeemCode />
+
+        <p style={{ textAlign: 'center', color: '#555', fontSize: '0.85rem', marginTop: 26 }}>
           Not sure yet? <Link href="/demo" style={{ color: '#FFD700' }}>Request a demo</Link> and
           we&apos;ll walk through Prov on your agency&apos;s real workflow first.
         </p>

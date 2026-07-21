@@ -43,10 +43,23 @@ export async function proxy(request: NextRequest) {
   // a provisioned profile (access_type set by ops) OR membership in a workspace
   // (team members carry no access_type of their own). No trial/paywall gating.
   if (isProtected && user) {
-    const { data: profile } = await supabase.from('profiles').select('access_type').eq('id', user.id).single()
+    // Fetch access_type + comp_until. Defensive: if comp_until doesn't exist yet
+    // (pre-migration), the first select errors, so we fall back to access_type only
+    // and never deny access because of a missing column.
+    let accessType = 'none'
+    let compExpired = false
+    const r1 = await supabase.from('profiles').select('access_type, comp_until').eq('id', user.id).maybeSingle()
+    if (r1.error) {
+      const r2 = await supabase.from('profiles').select('access_type').eq('id', user.id).maybeSingle()
+      accessType = (r2.data?.access_type as string) ?? 'none'
+    } else {
+      accessType = (r1.data?.access_type as string) ?? 'none'
+      const cu = r1.data?.comp_until as string | null | undefined
+      if (cu && new Date(cu) < new Date()) compExpired = true // comp grant lapsed
+    }
     // trial/starter/solo are the self-serve credit tiers; trial expiry is enforced
     // at the send route (credits), not here — the dashboard stays accessible.
-    const provisioned = ['lifetime', 'standard', 'vip', 'solo', 'starter', 'trial'].includes(profile?.access_type ?? 'none')
+    const provisioned = !compExpired && ['lifetime', 'standard', 'vip', 'solo', 'starter', 'trial'].includes(accessType)
     let hasAccess = provisioned
     if (!hasAccess) {
       // workspace_members read is allowed to the member themselves via the
