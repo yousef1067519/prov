@@ -3,6 +3,7 @@
 import { motion, useInView } from 'framer-motion'
 import { useRef } from 'react'
 import { PricingCard } from '@/components/ui/dark-gradient-pricing'
+import RedeemCode from '@/components/RedeemCode'
 
 // ENTERPRISE (§7): sales-led tiers, configurable — not hardcoded checkout prices.
 // The numbers here are positioning copy; actual contracts are set in the sales
@@ -117,6 +118,8 @@ export default function PricingSection() {
             ]}
           />
         </div>
+
+        <RedeemCode />
 
         <p style={{ textAlign: 'center', color: '#444', fontSize: '0.875rem', marginTop: 24 }}>
           Every account starts with 25 free outreach credits — no card required. Cancel anytime. No setup fees.

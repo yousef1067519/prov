@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { Check } from 'lucide-react'
-import RedeemCode from './RedeemCode'
+import RedeemCode from '@/components/RedeemCode'
 
 export const metadata: Metadata = { title: 'Choose your plan — Prov' }
 
